@@ -1,4 +1,4 @@
-# Lama Dev School Management Dashboard
+# SIME School Management Dashboard
 
 ## Getting Started
 
