@@ -1,3 +1,32 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.react-calendar {
+    width: 100% !important;
+    border: none !important;
+    font-family: 'Times New Roman', Times, serif;
+}
+
+.react-calendar_navigation_label_labelText{
+    font-weight: 600;
+}
+
+.react-calendar_title--active{
+    background-color: #C3EBFA !important;
+    color:black !important;
+}
+
+.rbc-btn-group:first-child {
+    display: none !important;
+}
+
+.rbc-btn-group-label{
+    text-align: right !important;
+    padding: 0px 20px !important;
+}
+
+.rbc-btn-group:last-child {
+ font-size: 13px;
+}
+    
