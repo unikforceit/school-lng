@@ -1,0 +1,5 @@
+import { getSession } from "@/lib/auth";
+import { fetchOpenRouterModels, getAiSecret, getAiSettings } from "@/lib/ai-settings";
+import { jsonError } from "@/lib/http";
+export const dynamic="force-dynamic";
+export async function GET(){const session=await getSession();if(!session||session.role!=="admin")return jsonError("Administrator access required",session?403:401);const key=getAiSecret(session.tenantId),settings=getAiSettings(session.tenantId),checkedAt=new Date().toISOString();if(!key)return Response.json({data:{connected:false,checkedAt,selectedModel:settings.model,models:[],error:"Add and save an OpenRouter API key to connect."}});try{const models=await fetchOpenRouterModels(key);return Response.json({data:{connected:true,checkedAt,selectedModel:settings.model,models,error:""}},{headers:{"Cache-Control":"no-store"}})}catch(error){return Response.json({data:{connected:false,checkedAt,selectedModel:settings.model,models:[],error:error instanceof Error?error.message:"OpenRouter is unavailable."}},{headers:{"Cache-Control":"no-store"}})}}

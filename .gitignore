@@ -35,3 +35,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+# Local database and secrets
+data/*.db
+data/*.db-shm
+data/*.db-wal
+.env.local
+
+# Local audits and generated workspace artifacts
+/work/

@@ -1,29 +1,15 @@
-import Menu from "@/components/Menu";
-import Navbar from "@/components/Navbar";
-import Link from "next/link";
-import Image from "next/image";
+import { getSession } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import FloatingSage from "@/components/FloatingSage";
+import DashboardShell from "@/components/DashboardShell";
+import { getAiSettings, roleAllowed } from "@/lib/ai-settings";
+import { db } from "@/lib/db";
 
-export default function DashboardLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-   return<div className="h-screen flex">
-    {/*Left */}
-    <div className="w-[14%] md:w-[8%] lg:w-[16%] xl:w-[14%] bg-white-200">
-  <Link href="/" className="flex items-center justify-center lg:justify-start gap-2">
-    <Image src="/logo.png" alt="logo" width={32} height={32} />
-    <span className="hidden lg:block">SAGE</span>
-  </Link>
-  <Menu/>
-</div>
-     
-     {/*Right */}
-    <div className="w-[86%] md:w-[92%] lg:w-[84%] xl:w-[86%] bg-gray-100 overflow-scroll flex flex-col">
-      <Navbar/>
-      {children} 
-    </div>
-    
-    </div>
-    
+export default async function DashboardLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const session = await getSession();
+  if (!session) redirect("/sign-in");
+  if (session.role === "superadmin") redirect("/superadmin");
+  const ai = getAiSettings(session.tenantId);
+  const apiAccess=session.role==="admin"?db.prepare("SELECT school_visible visible FROM developer_api_settings WHERE tenant_id=?").get(session.tenantId) as {visible:number}|undefined:undefined;
+  return <DashboardShell userId={session.name} role={session.role} tenantId={session.tenantId} apiVisible={Boolean(apiAccess?.visible)}>{children}{ai.floatingEnabled && roleAllowed(ai,session.role) && <FloatingSage name={session.name} role={session.role} />}</DashboardShell>;
 }

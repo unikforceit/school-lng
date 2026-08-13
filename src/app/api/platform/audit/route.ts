@@ -1,0 +1,3 @@
+import { db } from "@/lib/db";
+import { requirePlatform } from "@/lib/platform";
+export async function GET(){const auth=await requirePlatform();if("error" in auth)return auth.error;const raw=db.prepare("SELECT id,actor_email actorEmail,action,tenant_id tenantId,details,created_at createdAt FROM platform_audit ORDER BY id DESC LIMIT 250").all() as Array<{id:number;actorEmail:string;action:string;tenantId:string|null;details:string;createdAt:string}>;const rows=raw.map(row=>({...row,details:JSON.parse(row.details) as Record<string,unknown>}));return Response.json({data:rows},{headers:{"Cache-Control":"no-store"}})}

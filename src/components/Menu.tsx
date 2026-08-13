@@ -1,137 +1,33 @@
-const menuItems = [
-  {
-    title: "MENU",
-    items: [
-      {
-        icon: "/home.png",
-        label: "Home",
-        href: "/",
-        visible: ["admin", "teacher", "student", "parent"],
-      },
-      {
-        icon: "/teacher.png",
-        label: "Teachers",
-        href: "/list/teachers",
-        visible: ["admin", "teacher"],
-      },
-      {
-        icon: "/student.png",
-        label: "Students",
-        href: "/list/students",
-        visible: ["admin", "teacher"],
-      },
-      {
-        icon: "/parent.png",
-        label: "Parents",
-        href: "/list/parents",
-        visible: ["admin", "teacher"],
-      },
-      {
-        icon: "/subject.png",
-        label: "Subjects",
-        href: "/list/subjects",
-        visible: ["admin"],
-      },
-      {
-        icon: "/class.png",
-        label: "Classes",
-        href: "/list/classes",
-        visible: ["admin", "teacher"],
-      },
-      {
-        icon: "/lesson.png",
-        label: "Lessons",
-        href: "/list/lessons",
-        visible: ["admin", "teacher"],
-      },
-      {
-        icon: "/exam.png",
-        label: "Exams",
-        href: "/list/exams",
-        visible: ["admin", "teacher", "student", "parent"],
-      },
-      {
-        icon: "/assignment.png",
-        label: "Assignments",
-        href: "/list/assignments",
-        visible: ["admin", "teacher", "student", "parent"],
-      },
-      {
-        icon: "/result.png",
-        label: "Results",
-        href: "/list/results",
-        visible: ["admin", "teacher", "student", "parent"],
-      },
-      {
-        icon: "/attendance.png",
-        label: "Attendance",
-        href: "/list/attendance",
-        visible: ["admin", "teacher", "student", "parent"],
-      },
-      {
-        icon: "/calendar.png",
-        label: "Events",
-        href: "/list/events",
-        visible: ["admin", "teacher", "student", "parent"],
-      },
-      {
-        icon: "/message.png",
-        label: "Messages",
-        href: "/list/messages",
-        visible: ["admin", "teacher", "student", "parent"],
-      },
-      {
-        icon: "/announcement.png",
-        label: "Announcements",
-        href: "/list/announcements",
-        visible: ["admin", "teacher", "student", "parent"],
-      },
-    ],
-  },
-  {
-    title: "OTHER",
-    items: [
-      {
-        icon: "/profile.png",
-        label: "Profile",
-        href: "/profile",
-        visible: ["admin", "teacher", "student", "parent"],
-      },
-      {
-        icon: "/setting.png",
-        label: "Settings",
-        href: "/settings",
-        visible: ["admin", "teacher", "student", "parent"],
-      },
-      {
-        icon: "/logout.png",
-        label: "Logout",
-        href: "/logout",
-        visible: ["admin", "teacher", "student", "parent"],
-      },
-    ],
-  },
-];
-
+"use client";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
+import type { Role } from "@/lib/auth";
+import { canReadResource, type ResourceType } from "@/lib/resources";
 
-const Menu = () => {
-  return (
-    <div className='bg-white-200'>
-      {menuItems.map((i)=>(
-      <div className="flex flex-col gap-2" key={i.title}>
-        <span className="hidden lg:block text-black-400 font-light my-4">{i.title}</span>
-        {i.items.map((item) => (
-          <Link href={item.href} key={item.label} className="flex items-center justify-center lg:justify-start gap-4 text-black-500 py-2">
-            <Image src={item.icon} alt="" width={20} height={20}/>
-            <span className="hidden lg:block">{item.label}</span>
-          </Link>
-        ))}
+type Item={label:string;href:string;icon:string;resource?:ResourceType;roles?:Role[]};
+const academy:Item[]=[
+  {label:"Subjects",href:"/list/subjects",icon:"/subject.png",resource:"subjects"},{label:"Classes",href:"/list/classes",icon:"/class.png",resource:"classes"},{label:"Lessons",href:"/list/lessons",icon:"/lesson.png",resource:"lessons"},{label:"Exams",href:"/list/exams",icon:"/exam.png",resource:"exams"},{label:"Assignments",href:"/list/assignments",icon:"/assignment.png",resource:"assignments"},{label:"Results",href:"/list/results",icon:"/result.png",resource:"results"},{label:"Attendance",href:"/list/attendance",icon:"/attendance.png",resource:"attendance"},
+];
+const communication:Item[]=[{label:"Events",href:"/list/events",icon:"/calendar.png",resource:"events"},{label:"Messages",href:"/list/messages",icon:"/message.png",resource:"messages"},{label:"Announcements",href:"/list/announcements",icon:"/announcement.png",resource:"announcements"}];
 
-      </div>
-    ))}</div>
-  )
+export default function Menu({role,apiVisible=false,expanded=false}:{role:Role;apiVisible?:boolean;expanded?:boolean}){
+  const pathname=usePathname();
+  const [academyOpen,setAcademyOpen]=useState(pathname.startsWith("/list/subjects")||pathname.startsWith("/list/classes")||pathname.startsWith("/list/lessons")||pathname.startsWith("/list/exams")||pathname.startsWith("/list/assignments")||pathname.startsWith("/list/results")||pathname.startsWith("/list/attendance"));
+  const [gameOpen,setGameOpen]=useState(pathname.startsWith("/gamification"));
+  const allowed=(items:Item[])=>items.filter(item=>(!item.resource||canReadResource(role,item.resource))&&(!item.roles||item.roles.includes(role)));
+  const main:Item[]=role==="superadmin"?[
+    {label:"Overview",href:"/superadmin",icon:"/home.png"},{label:"Schools",href:"/superadmin/schools",icon:"/class.png"},{label:"Licenses",href:"/superadmin/licenses",icon:"/result.png"},{label:"School users",href:"/superadmin/users",icon:"/teacher.png"},{label:"Developer API",href:"/superadmin/api",icon:"/message.png"},{label:"Audit log",href:"/superadmin/audit",icon:"/attendance.png"},{label:"Platform settings",href:"/superadmin/settings",icon:"/setting.png"},
+  ]:[
+    {label:"Home",href:`/${role}`,icon:"/home.png"},{label:"SAGE AI",href:"/ai",icon:"/message.png"},{label:"Student Smart Card",href:"/id-card",icon:"/profile.png"},...(role==="admin"&&apiVisible?[{label:"Developer API",href:"/developer",icon:"/message.png"} as Item]:[]),{label:"Teachers",href:"/list/teachers",icon:"/teacher.png",resource:"teachers"},{label:"Students",href:"/list/students",icon:"/student.png",roles:["admin","teacher"]},{label:"Parents",href:"/list/parents",icon:"/parent.png",resource:"parents"},...(role==="admin"||role==="teacher"?[{label:"Early intervention",href:"/interventions",icon:"/attendance.png"} as Item]:[]),
+  ];
+  const game:Item[]=role==="superadmin"?[]:[{label:"Overall & class",href:"/gamification",icon:"/result.png"},...(role==="admin"?[{label:"Game rules",href:"/gamification/settings",icon:"/setting.png"}]:[])];
+  const itemView=(item:Item,nested=false)=>{const active=pathname===item.href||(item.href!=="/superadmin"&&pathname.startsWith(`${item.href}/`));return <Link key={item.href} title={item.label} aria-current={active?"page":undefined} href={item.href} className={`flex h-12 items-center gap-3 rounded-xl text-sm font-medium transition-all duration-200 ${expanded?"justify-start":"justify-center lg:justify-start"} ${nested?(expanded?"pl-10 pr-3":"lg:pl-10 lg:pr-3"):(expanded?"px-3.5":"lg:px-3.5")} ${active?"bg-[#fff7e7] text-[#9a6900]":"text-[#50545b] hover:bg-[#fbfaf6] hover:text-[#102039]"}`}><span className="flex h-6 w-6 shrink-0 items-center justify-center"><Image src={item.icon} alt="" width={nested?16:19} height={nested?16:19}/></span><span className={`${expanded?"block":"hidden lg:block"} truncate`}>{item.label}</span></Link>};
+  async function logout(){await fetch("/api/auth/logout",{method:"POST"}).catch(()=>undefined);window.location.assign(role==="superadmin"?"/superadmin/sign-in":"/sign-in")}
+  const buttonClass=`flex h-12 w-full items-center gap-3 rounded-xl text-sm font-medium text-[#50545b] transition-all duration-200 hover:bg-[#fbfaf6] hover:text-[#102039] ${expanded?"justify-start px-3.5":"justify-center px-0 lg:justify-start lg:px-3.5"}`;
+  return <nav aria-label="Primary navigation" className="flex min-h-[calc(100vh-105px)] flex-col justify-between gap-8 pb-2">
+    <div className="space-y-1">{allowed(main).map(item=>itemView(item))}{role!=="superadmin"&&<><button type="button" aria-expanded={academyOpen} onClick={()=>setAcademyOpen(value=>!value)} className={buttonClass} title="Academy"><span className="flex h-6 w-6 shrink-0 items-center justify-center"><Image src="/subject.png" alt="" width={19} height={19}/></span><span className={`${expanded?"block":"hidden lg:block"} flex-1 text-left`}>Academy</span><span aria-hidden="true" className={`${expanded?"block":"hidden lg:block"} text-xs transition ${academyOpen?"rotate-180":""}`}>⌄</span></button>{academyOpen&&<div className={`space-y-1 border-l border-amber-100 ${expanded?"ml-6":"lg:ml-6"}`}>{allowed(academy).map(item=>itemView(item,true))}</div>}<button type="button" aria-expanded={gameOpen} onClick={()=>setGameOpen(value=>!value)} className={buttonClass} title="Gamification"><span className="flex h-6 w-6 shrink-0 items-center justify-center"><Image src="/result.png" alt="" width={19} height={19}/></span><span className={`${expanded?"block":"hidden lg:block"} flex-1 text-left`}>Gamification</span><span aria-hidden="true" className={`${expanded?"block":"hidden lg:block"} text-xs transition ${gameOpen?"rotate-180":""}`}>⌄</span></button>{gameOpen&&<div className={`space-y-1 border-l border-amber-100 ${expanded?"ml-6":"lg:ml-6"}`}>{game.map(item=>itemView(item,true))}</div>}{allowed(communication).map(item=>itemView(item))}</>}</div>
+    <div className="space-y-1 border-t border-slate-100 pt-3">{role!=="superadmin"&&itemView({label:"Profile",href:"/profile",icon:"/profile.png"})}{role!=="superadmin"&&itemView({label:"Setting",href:role==="admin"?"/admin/settings":"/settings",icon:"/setting.png"})}<button type="button" title="Log out" onClick={()=>void logout()} className={`${buttonClass} text-red-600 hover:bg-red-50 hover:text-red-700`}><span className="flex h-6 w-6 shrink-0 items-center justify-center"><Image src="/logout.png" alt="" width={19} height={19}/></span><span className={expanded?"block":"hidden lg:block"}>Log Out</span></button></div>
+  </nav>;
 }
-
-export default Menu;

@@ -1,0 +1,1 @@
+import {redirect} from "next/navigation";import SchoolDeveloperPortal from "@/components/SchoolDeveloperPortal";import {getSession} from "@/lib/auth";export default async function Page(){const session=await getSession();if(!session)redirect("/sign-in");if(session.role!=="admin")redirect(`/${session.role}`);return <SchoolDeveloperPortal/>}

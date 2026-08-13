@@ -1,29 +1,21 @@
+"use client";
 import Image from "next/image";
-const Navbar = () => {
-    return (
-        <div className='flex items-center justify-between p-4'>
-            {/*SEARCH BAR */}
-            <div className='hidden md:flex items-center gap-2 text-xs rounded-full ring-[1.5px] ring-gray-300 px-2 '>
-                <Image src="/search.png" alt="" width={14} height={14}/>
-                <input type="text" placeholder="Search..." className="w-[200px] p-2 bg-transparent outline-none" />
-            </div>
-            {/*ICONS AND US */}
-            <div className='flex items-center gap-6 justify-end w-full'>
-                <div className='bg-white rounded-full w-7 h-7 flex items-center justify-center cursor-pointer'>
-                    <Image src="/message.png" alt="" width={20} height={20}/>
-                </div>
-                <div className='bg-white rounded-full w-7 h-7 flex items-center justify-center cursor-pointer relative'>
-                    <Image src="/announcement.png" alt="" width={20} height={20}/>
-                    <div className="absolute -top-3 -right-3 w-5 h-5 flex items-center justify-center bg-yellow-500 text-black rounded-full text-xs">1</div>
-                </div>
-                <div className='flex flex-col'>
-                    <span className="text-xs leading-3 font-medium">Alphadio Kouyate</span>
-                    <span className="text-[10px] text-gray-500 text-right">Admin</span>
-                </div>
-                <Image src="/avatar.png" alt="" width={36} height={36} className="rounded-full"/>
-            </div>
-        </div>
-    )
-}
+import Link from "next/link";
+import { useEffect } from "react";
+import GlobalSearch from "@/components/GlobalSearch";
+import NotificationCenter from "@/components/NotificationCenter";
 
-export default Navbar;
+export default function Navbar({ userId, role, onMenuOpen, menuOpen = false }: { userId: string; role: string; tenantId: string; onMenuOpen?: () => void; menuOpen?: boolean }) {
+  const platform=role==="superadmin";
+  useEffect(() => {
+    const refresh = () => { void fetch("/api/auth/refresh", { method: "POST" }).then(response=>{if(response.status===401)window.location.assign(platform?"/superadmin/sign-in":"/sign-in")}).catch(() => undefined); };
+    refresh();const interval = window.setInterval(refresh, 15 * 60 * 1000);return () => window.clearInterval(interval);
+  }, [platform]);
+  return <header className="sticky top-0 z-40 flex min-h-[76px] items-center justify-between gap-2 border-b border-[#f0eee8] bg-white/95 px-3 backdrop-blur-xl sm:gap-3 sm:px-6 lg:px-8">
+    {onMenuOpen&&<button id="dashboard-menu-button" type="button" onClick={onMenuOpen} aria-label="Open main menu" aria-controls="mobile-navigation" aria-expanded={menuOpen} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-xl text-slate-700 hover:border-amber-300 hover:bg-amber-50 lg:hidden">☰</button>}
+    <div className="min-w-0 flex-1"><GlobalSearch/></div>
+    <div className="flex shrink-0 items-center gap-1.5 sm:gap-2.5"><NotificationCenter/>{!platform&&<><Link href="/list/announcements" aria-label="Announcements" className="relative hidden h-10 w-10 items-center justify-center rounded-full border border-slate-100 bg-white transition hover:border-amber-200 hover:bg-[#fff9eb] sm:flex"><Image src="/announcement.png" alt="" width={18} height={18}/></Link><Link href="/list/messages" aria-label="Messages" className="hidden h-10 w-10 items-center justify-center rounded-full border border-slate-100 bg-white transition hover:border-amber-200 hover:bg-[#fff9eb] sm:flex"><Image src="/message.png" alt="" width={18} height={18}/></Link></>}
+      <Link href={platform?"/superadmin":"/profile"} className="ml-1 flex min-h-12 items-center gap-2.5 rounded-xl px-1.5 py-1 transition hover:bg-[#faf9f5] sm:px-2"><Image src="/avatar.png" alt="" width={39} height={39} className="h-[39px] w-[39px] rounded-full object-cover ring-2 ring-[#fff2c8]"/><span className="hidden min-w-0 sm:block"><strong className="block max-w-36 truncate text-sm font-bold text-[#102039]">{userId}</strong><span className="block text-xs capitalize text-slate-500">{role}</span></span><span aria-hidden="true" className="hidden text-lg text-[#102039] sm:inline">⌄</span><span className="sr-only">Open profile</span></Link>
+    </div>
+  </header>;
+}
