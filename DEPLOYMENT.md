@@ -9,7 +9,7 @@
 | Fly.io + volume | Yes, one Machine | Docker-based deployment near users |
 | Docker VPS / DigitalOcean Droplet | Yes | Maximum control and predictable storage |
 | cPanel Node.js hosting | Sometimes | Existing compatible hosting account |
-| Vercel or Netlify | No, not safely with local SQLite | Use after PostgreSQL/Supabase migration |
+| Vercel or Netlify | Auth/demo preview only | Supabase Auth works; persistent data still needs PostgreSQL migration |
 
 The current realtime channel uses Server-Sent Events and a shared SQLite database. Keep one long-running application instance. For horizontal scaling or serverless hosting, migrate notifications and application data to PostgreSQL and use Supabase Realtime or another shared event service.
 
@@ -47,16 +47,16 @@ Generate secrets locally with `openssl rand -base64 48`.
 
 ## Vercel + Supabase: best long-term architecture
 
-Do not deploy the current SQLite build directly to Vercel. Vercel Functions do not provide shared persistent local storage. First migrate `src/lib/db.ts` and its synchronous SQL consumers from `better-sqlite3` to PostgreSQL.
+Supabase Auth is connected and all demo roles can sign in on Vercel. The application uses `/tmp/sime.db` there so pages can render, but Vercel Functions do not provide shared persistent local storage: edits can disappear after a cold start. Treat it only as a synthetic-data preview until `src/lib/db.ts` and its synchronous SQL consumers are migrated from `better-sqlite3` to PostgreSQL.
 
 Recommended migration:
 
-1. Create a Supabase project and translate the schema in `src/lib/db.ts` to PostgreSQL migrations.
+1. Use the connected Supabase project and the committed PostgreSQL migrations.
 2. Replace `better-sqlite3` with a PostgreSQL client or ORM supporting pooled serverless connections.
 3. Convert synchronous database calls to asynchronous calls and use Supabase's transaction pooler for Vercel.
 4. Import the existing SQLite data into PostgreSQL.
 5. Run `npm run verify:all` against a disposable staging database.
-6. Deploy the Next.js app to Vercel and configure `DATABASE_URL`, all secrets above, and the production `NEXT_PUBLIC_APP_URL`.
+6. Deploy the Next.js app to Vercel and configure `DATABASE_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, all server secrets above, and the production `NEXT_PUBLIC_APP_URL`.
 
 Supabase is the database platform in this setup; Vercel hosts the Next.js application.
 

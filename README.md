@@ -1,6 +1,6 @@
 # school-lng — SIME multi-tenant school management
 
-SIME is a full-stack Next.js application with reusable React interfaces, tenant-isolated persistence, signed authentication, and a guarded OpenRouter-powered school copilot.
+SIME is a full-stack Next.js application with reusable React interfaces, tenant-isolated persistence, Supabase authentication, and a guarded OpenRouter-powered school copilot.
 
 ## Functional modules
 
@@ -18,15 +18,15 @@ SIME is a full-stack Next.js application with reusable React interfaces, tenant-
 
 ## Security model
 
-- HTTP-only, signed, rolling session cookie
-- Tenant ID carried in the signed session, never trusted from CRUD request input
+- Supabase-issued access and refresh tokens stored in secure HTTP-only cookies
+- Tenant ID and role sourced from protected Supabase `app_metadata`, never user-editable metadata or CRUD request input
 - Shared role matrix enforced in navigation, server pages, APIs, and mutations
 - Personal ID cards are self-only; administrators can generate cards for all tenant identities
 - Signed, expiring ID-card QR tokens are revalidated against active database records
 - Zod validation, SQL parameters, database constraints, request limits, and AI timeouts
 - Server-only OpenRouter key and metadata-only AI audit records
 - Clickjacking, MIME-sniffing, referrer, browser-permission, and cross-origin headers
-- Production fails closed when credentials or `AUTH_SECRET` are absent
+- Supabase Auth tokens are revalidated server-side before protected pages and APIs are served
 
 ## Local run — port 6969
 
@@ -63,9 +63,9 @@ The database and demo tenant are created automatically. To enable SAGE, put an O
 
 ## Supabase deployment status
 
-Supabase project `skxizqwipqthvukzgcll` now contains the secured SIME PostgreSQL schema in [`supabase/migrations`](./supabase/migrations). All 23 public tables have RLS enabled with server-only policies, and six change tables are registered with Supabase Realtime. No secret keys, local password hashes, or private SQLite records are committed to this repository.
+Supabase project `skxizqwipqthvukzgcll` now contains the secured SIME PostgreSQL schema in [`supabase/migrations`](./supabase/migrations). All 23 public tables have RLS enabled with server-only policies, six change tables are registered with Supabase Realtime, and all five demo roles authenticate through Supabase Auth with tenant and role authorization stored in protected `app_metadata`. No secret keys, local password hashes, or private SQLite records are committed to this repository.
 
-The running Next.js application still uses its SQLite adapter. A Vercel deployment can build from this repository, but persistent production writes must wait until the application database adapter is converted to Supabase/PostgreSQL. Do not present a Vercel preview using ephemeral SQLite as a persistent production deployment.
+Authentication is Supabase-backed. The remaining school data operations still use the SQLite adapter; Vercel uses a temporary database so the demo dashboards can open, but its changes are not durable across cold starts. Persistent production writes still require converting those operations to Supabase/PostgreSQL.
 
 ## Production run
 
@@ -91,7 +91,9 @@ Persist `/app/data` as a volume and terminate TLS at the reverse proxy. SQLite i
 
 | Variable | Purpose |
 |---|---|
-| `AUTH_SECRET` | HMAC session secret; required in production |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL; the included project is the default |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Public Supabase browser/auth key; the included project key is the default |
+| `AUTH_SECRET` | Server encryption key for saved AI credentials and optional ID-card signing fallback |
 | `ID_CARD_SECRET` | Optional separate HMAC secret for ID-card QR tokens; falls back to `AUTH_SECRET` |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` | Initial administrator credentials |
 | `SUPERADMIN_EMAIL` / `SUPERADMIN_PASSWORD` | Initial platform administrator credentials |

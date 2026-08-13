@@ -2,7 +2,7 @@ import Database from "better-sqlite3";
 import path from "node:path";
 import { scryptSync } from "node:crypto";
 
-const dbPath = process.env.DATABASE_PATH ?? path.join(process.cwd(), "data", "sime.db");
+const dbPath = process.env.DATABASE_PATH ?? (process.env.VERCEL ? path.join("/tmp", "sime.db") : path.join(process.cwd(), "data", "sime.db"));
 const globalForDb = globalThis as unknown as { simeDb?: Database.Database };
 
 export const db = globalForDb.simeDb ?? new Database(dbPath);

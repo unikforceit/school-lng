@@ -14,7 +14,10 @@ let originalGlobalLeaderboardPublic;
 function check(condition, label, detail = "") { checks.push(label); if (!condition) failures.push(`${label}${detail ? `: ${detail}` : ""}`); }
 async function request(path, init = {}) { return fetch(`${base}${path}`, { redirect: "manual", ...init }); }
 async function waitUntilReady() { for (let i=0;i<60;i+=1) { try { const r=await request("/api/health"); if(r.ok)return; } catch {} await new Promise(resolve=>setTimeout(resolve,250)); } throw new Error(`Server did not start\n${logs}`); }
-function cookieFrom(response) { return response.headers.get("set-cookie")?.split(";")[0] || ""; }
+function cookieFrom(response) {
+  const values = typeof response.headers.getSetCookie === "function" ? response.headers.getSetCookie() : [response.headers.get("set-cookie") || ""];
+  return values.filter(Boolean).map(value=>value.split(";")[0]).join("; ");
+}
 
 const accounts = {
   superadmin: ["platform", "superadmin@sime.local", "SuperAdmin123!"],
@@ -91,7 +94,7 @@ try {
   for(const page of ["/superadmin/schools","/superadmin/licenses","/superadmin/users","/superadmin/audit","/superadmin/settings","/superadmin/schools/demo-school"]){const response=await request(page,{headers:{cookie:cookies.superadmin}});check(response.status===200,`superadmin page ${page}`,String(response.status));}
   for(const endpoint of ["/api/platform/tenants","/api/platform/users","/api/platform/audit","/api/platform/settings"]){const response=await request(endpoint,{headers:{cookie:cookies.superadmin}});check(response.status===200,`superadmin API ${endpoint}`,String(response.status));const denied=await request(endpoint,{headers:{cookie:cookies.admin}});check(denied.status===403,`admin denied ${endpoint}`,String(denied.status));}
   const platformOnSchoolLogin=await request("/api/auth/login",{method:"POST",headers:{"content-type":"application/json",origin:base},body:JSON.stringify({email:accounts.superadmin[1],password:accounts.superadmin[2],tenantId:"platform"})});check(platformOnSchoolLogin.status===403,"school login rejects platform account",String(platformOnSchoolLogin.status));
-  const schoolOnPlatformLogin=await request("/api/platform/auth/login",{method:"POST",headers:{"content-type":"application/json",origin:base},body:JSON.stringify({email:accounts.admin[1],password:accounts.admin[2]})});check(schoolOnPlatformLogin.status===401,"platform login rejects school account",String(schoolOnPlatformLogin.status));
+  const schoolOnPlatformLogin=await request("/api/platform/auth/login",{method:"POST",headers:{"content-type":"application/json",origin:base},body:JSON.stringify({email:accounts.admin[1],password:accounts.admin[2]})});check(schoolOnPlatformLogin.status===403,"platform login rejects school account",String(schoolOnPlatformLogin.status));
   const cardExpectations={
     admin:{present:["Jessica Rose","Amina Rahman","Nabil Hasan","Sara Ahmed"],absent:["Alex Morgan","Maya Chen"]},
     teacher:{present:["Jessica Rose","Amina Rahman","Nabil Hasan"],absent:["Sara Ahmed","Alex Morgan","Maya Chen"]},

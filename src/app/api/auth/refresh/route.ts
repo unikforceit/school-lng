@@ -1,21 +1,27 @@
 import { NextResponse } from "next/server";
-import { createSessionToken, getSession, SESSION_COOKIE } from "@/lib/auth";
+import { cookies } from "next/headers";
+import { REFRESH_COOKIE, SESSION_COOKIE } from "@/lib/auth";
 import { jsonError } from "@/lib/http";
-import { getSecuritySettings, securityOriginValid } from "@/lib/security";
+import { hasValidOrigin } from "@/lib/http";
+import { refreshSupabaseSession, sessionFromUser, tokenExpiry } from "@/lib/supabase-auth";
 
 export async function POST(request: Request) {
-  const session = await getSession();
-  if (!session) return jsonError("Authentication required", 401);
-  if (!securityOriginValid(request, session.tenantId)) return jsonError("Invalid request origin", 403);
-  const settings = getSecuritySettings(session.tenantId);
-  const maxAge = settings.sessionHours * 60 * 60;
-  const response = NextResponse.json({ data: { refreshed: true, expiresAt: Date.now() + maxAge * 1000 } });
-  response.cookies.set(SESSION_COOKIE, createSessionToken({ ...session, exp: Date.now() + maxAge * 1000 }), {
+  if (!hasValidOrigin(request)) return jsonError("Invalid request origin", 403);
+  const refreshToken = (await cookies()).get(REFRESH_COOKIE)?.value;
+  if (!refreshToken) return jsonError("Authentication required", 401);
+  let tokens;
+  try { tokens = await refreshSupabaseSession(refreshToken); } catch { return jsonError("Authentication required", 401); }
+  const expiresAt = tokenExpiry(tokens.access_token);
+  if (!sessionFromUser(tokens.user, expiresAt)) return jsonError("Account role is not configured", 403);
+  const secure = request.headers.get("x-forwarded-proto")?.split(",")[0].trim() === "https" || new URL(request.url).protocol === "https:";
+  const response = NextResponse.json({ data: { refreshed: true, expiresAt } });
+  response.cookies.set(SESSION_COOKIE, tokens.access_token, {
     httpOnly: true,
-    secure: settings.secureCookies && new URL(request.url).protocol === "https:",
+    secure,
     sameSite: "lax",
     path: "/",
-    maxAge,
+    maxAge: Math.max(60, tokens.expires_in || 3600),
   });
+  response.cookies.set(REFRESH_COOKIE, tokens.refresh_token, { httpOnly: true, secure, sameSite: "lax", path: "/", maxAge: 30*24*60*60 });
   return response;
 }
