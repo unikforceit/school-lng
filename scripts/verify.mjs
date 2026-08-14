@@ -96,10 +96,10 @@ try {
   const platformOnSchoolLogin=await request("/api/auth/login",{method:"POST",headers:{"content-type":"application/json",origin:base},body:JSON.stringify({email:accounts.superadmin[1],password:accounts.superadmin[2],tenantId:"platform"})});check(platformOnSchoolLogin.status===403,"school login rejects platform account",String(platformOnSchoolLogin.status));
   const schoolOnPlatformLogin=await request("/api/platform/auth/login",{method:"POST",headers:{"content-type":"application/json",origin:base},body:JSON.stringify({email:accounts.admin[1],password:accounts.admin[2]})});check(schoolOnPlatformLogin.status===403,"platform login rejects school account",String(schoolOnPlatformLogin.status));
   const cardExpectations={
-    admin:{present:["Jessica Rose","Amina Rahman","Nabil Hasan","Sara Ahmed"],absent:["Alex Morgan","Maya Chen"]},
-    teacher:{present:["Jessica Rose","Amina Rahman","Nabil Hasan"],absent:["Sara Ahmed","Alex Morgan","Maya Chen"]},
+    admin:{present:["Devon Harper","Emily Anderson","Sophia Brown","Jessica Rose","Amina Rahman","Nabil Hasan","Sara Ahmed"],absent:["Alex Morgan","Maya Chen"]},
+    teacher:{present:["Emily Anderson","Jessica Rose","Amina Rahman","Nabil Hasan"],absent:["Sara Ahmed","Alex Morgan","Maya Chen"]},
     student:{present:["Jessica Rose"],absent:["Amina Rahman","Nabil Hasan","Sara Ahmed","Alex Morgan","Maya Chen"]},
-    parent:{present:["Jessica Rose"],absent:["Amina Rahman","Nabil Hasan","Sara Ahmed","Alex Morgan","Maya Chen"]},
+    parent:{present:["Sophia Brown","Jessica Rose"],absent:["Amina Rahman","Nabil Hasan","Sara Ahmed","Alex Morgan","Maya Chen"]},
   };
   for(const [role,expectation] of Object.entries(cardExpectations)){
     const response=await request("/id-card",{headers:{cookie:cookies[role]}});const html=await response.text();
@@ -107,6 +107,7 @@ try {
     check(expectation.absent.every(name=>!html.includes(name)),`${role} ID card excludes unauthorized identities`);
     check(html.includes("data:image/png;base64"),`${role} ID card contains QR code`);
   }
+  const platformCard=await request("/superadmin/id-card",{headers:{cookie:cookies.superadmin}});const platformCardHtml=await platformCard.text();check(platformCard.status===200&&platformCardHtml.includes("SIME Platform Owner")&&platformCardHtml.includes("data:image/png;base64"),"superadmin platform ID card");
   const adminHeaders={cookie:cookies.admin,origin:base,"content-type":"application/json"};
   const suspendLicense=await request("/api/platform/tenants/demo-school",{method:"PATCH",headers:{cookie:cookies.superadmin,origin:base,"content-type":"application/json"},body:JSON.stringify({licenseStatus:"suspended"})});check(suspendLicense.status===200,"superadmin license suspension",String(suspendLicense.status));const licenseRevoked=await request("/api/auth/me",{headers:{cookie:cookies.admin}});check(licenseRevoked.status===401,"license immediately revokes school session",String(licenseRevoked.status));const restoreLicense=await request("/api/platform/tenants/demo-school",{method:"PATCH",headers:{cookie:cookies.superadmin,origin:base,"content-type":"application/json"},body:JSON.stringify({licenseStatus:"active",licenseExpiresAt:"2027-07-22"})});check(restoreLicense.status===200,"superadmin license restoration",String(restoreLicense.status));
   const suspendSchool=await request("/api/platform/tenants/sample-academy",{method:"PATCH",headers:{cookie:cookies.superadmin,origin:base,"content-type":"application/json"},body:JSON.stringify({active:false})});check(suspendSchool.status===200,"superadmin school suspension",String(suspendSchool.status));

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import LanguageProvider from "@/components/LanguageProvider";
 
 export const metadata: Metadata = {
   title: "SIME · Intelligent School Management",
@@ -17,8 +18,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body><a href="#main-content" className="skip-link">Skip to main content</a>{children}</body>
+    <html lang="en" dir="ltr" suppressHydrationWarning>
+      <body><LanguageProvider><a href="#main-content" className="skip-link">Skip to main content</a>{children}</LanguageProvider></body>
     </html>
   );
 }

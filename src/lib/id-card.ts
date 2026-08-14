@@ -11,6 +11,11 @@ export type IdCardTokenPayload = {
   exp: number;
 };
 
+export type IdCardPerson={
+  key:string;id:string;name:string;role:Role;email:string;kind:"student"|"staff"|"guardian"|"platform";
+  grade:string|number;className:string;bloodType:string;photoUrl:string;qrCode:string;
+};
+
 function secret() {
   if (process.env.NODE_ENV === "production" && !process.env.ID_CARD_SECRET && !process.env.AUTH_SECRET) {
     throw new Error("ID_CARD_SECRET or AUTH_SECRET is required in production");

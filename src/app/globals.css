@@ -17,6 +17,11 @@ html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; text-size-adjust
 
 input, select, textarea, button { font: inherit; }
 
+html[dir="rtl"] body { font-family: Tahoma, "Segoe UI", Arial, sans-serif; }
+html[dir="rtl"] .mobile-navigation-drawer { margin-inline-start: auto; }
+.language-switcher select { color: inherit; }
+.language-switcher option { direction: auto; }
+
 button, [role="button"] { min-width: 24px; min-height: 24px; touch-action: manipulation; }
 
 button:disabled, input:disabled, select:disabled, textarea:disabled { cursor: not-allowed; }
@@ -63,14 +68,14 @@ button:disabled, input:disabled, select:disabled, textarea:disabled { cursor: no
 
 @media print {
     @page {
-        size: 85.6mm 53.98mm;
-        margin: 0;
+        size: A4 portrait;
+        margin: 10mm;
     }
 
     html,
     body {
-        width: 85.6mm;
-        height: 53.98mm;
+        width: auto;
+        height: auto;
         margin: 0 !important;
         background: white !important;
     }
@@ -79,21 +84,59 @@ button:disabled, input:disabled, select:disabled, textarea:disabled { cursor: no
         visibility: hidden !important;
     }
 
-    .id-card-print-area,
-    .id-card-print-area * {
+    .id-card-print-root,
+    .id-card-print-root * {
         visibility: visible !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
     }
 
-    .id-card-print-area {
-        position: fixed !important;
-        inset: 0 auto auto 0 !important;
+    .id-card-print-root {
+        position: absolute !important;
+        inset: 0 !important;
+        display: grid !important;
+        width: 190mm !important;
+        margin: 0 !important;
+        background: white !important;
+    }
+
+    .id-card-print-grid {
+        grid-template-columns: repeat(2, 85.6mm) !important;
+        align-content: start !important;
+        justify-content: space-between !important;
+        gap: 7mm 8.8mm !important;
+    }
+
+    .id-card-print-single {
+        grid-template-columns: 85.6mm !important;
+        justify-content: center !important;
+        align-content: start !important;
+    }
+
+    .id-card-print-root .id-card-print-area {
+        position: relative !important;
         width: 85.6mm !important;
         height: 53.98mm !important;
         max-width: none !important;
         border: 0 !important;
         border-radius: 3mm !important;
         box-shadow: none !important;
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+    }
+
+    .id-card-print-root .id-card-school { font-size: 10px !important; line-height: 1.15 !important; }
+    .id-card-print-root .id-card-official { font-size: 6.5px !important; line-height: 1.2 !important; }
+    .id-card-print-root .id-card-role { font-size: 6.5px !important; line-height: 1 !important; padding: 4px 8px !important; }
+    .id-card-print-root .id-card-avatar { font-size: 22px !important; border-width: 3px !important; }
+    .id-card-print-root .id-card-holder-label { font-size: 6px !important; line-height: 1.15 !important; }
+    .id-card-print-root .id-card-name { font-size: 16px !important; line-height: 1.05 !important; margin-top: 2px !important; }
+    .id-card-print-root .id-card-detail { font-size: 7px !important; line-height: 1.15 !important; margin-top: 2px !important; }
+    .id-card-print-root .id-card-data { font-size: 6px !important; line-height: 1.15 !important; margin-top: 7px !important; gap: 4px 7px !important; }
+    .id-card-print-root .id-card-scan { font-size: 5.5px !important; line-height: 1.1 !important; margin-top: 1px !important; }
+    .id-card-print-root .id-card-footer { font-size: 5.5px !important; line-height: 1.1 !important; margin-top: 4px !important; padding-top: 4px !important; }
+
+    .id-card-print-root .id-card-print-area:nth-child(8n+1) {
+        break-before: auto;
     }
 }

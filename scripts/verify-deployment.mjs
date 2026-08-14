@@ -17,6 +17,8 @@ const shell = read("src/components/DashboardShell.tsx");
 const notifications = read("src/components/NotificationCenter.tsx");
 const stream = read("src/app/api/notifications/stream/route.ts");
 const guide = read("DEPLOYMENT.md");
+const idCard = read("src/components/IdCard.tsx");
+const i18n = read("src/lib/i18n.ts");
 
 check(pkg.engines?.node === ">=22 <23", "Node.js production runtime is pinned to the supported major");
 check(config.includes('output: "standalone"'), "Next.js standalone output is enabled");
@@ -29,6 +31,8 @@ check(shell.includes('aria-modal="true"') && shell.includes('event.key === "Esca
 check(notifications.includes('role="status"') && notifications.includes('navigator.onLine') && notifications.includes("router.refresh()"), "notification center exposes live/offline sync state and refreshes pages");
 check(stream.includes("last-event-id") && stream.includes('X-Accel-Buffering'), "realtime stream supports reconnect resumption and proxy-safe delivery");
 check(guide.includes("Railway") && guide.includes("Vercel + Supabase") && guide.includes("Render + persistent disk") && guide.includes("Fly.io + volume") && guide.includes("cPanel") && guide.includes("Docker VPS"), "deployment guide covers supported hosting paths");
+check(i18n.includes('code: "ar"') && i18n.includes('code: "fr"') && i18n.includes('direction: "rtl"'), "multilingual catalog includes Arabic, French, and RTL metadata");
+check(idCard.includes('print("selected")') && idCard.includes('print("all")') && css.includes("85.6mm") && css.includes("53.98mm"), "ID cards support selected and authorized bulk printing at ISO card size");
 
 if (failures.length) {
   console.error(`FAILED ${failures.length}/${checks}\n${failures.join("\n")}`);

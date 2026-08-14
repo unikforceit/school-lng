@@ -11,6 +11,8 @@ SIME is a full-stack Next.js application with reusable React interfaces, tenant-
 - Events, messages, and announcements
 - Profile, settings, and SAGE AI workspace
 - Standard-size printable ID cards with signed QR verification
+- Persistent English, Arabic (RTL), French, Bengali, and Spanish navigation/authentication UI
+- Role-aware personal and authorized bulk ID-card printing on A4 cut sheets
 - Overall/class gamification leaderboards and configurable scoring rules
 - Tenant-scoped student gender analytics on the admin dashboard
 - Search plus create, update, and delete workflows backed by the current SQLite application adapter
@@ -47,6 +49,8 @@ Additional MVP roles use school ID `demo-school`:
 - Teacher: `teacher@sime.local` / `Teacher123!`
 - Student: `student@sime.local` / `Student123!`
 - Parent: `parent@sime.local` / `Parent123!`
+
+Use the language selector on sign-in or in the dashboard header. The preference is retained in the browser; Arabic automatically switches the shell and navigation to RTL without changing tenant data.
 
 Platform administration has its own login at [http://localhost:6969/superadmin/sign-in](http://localhost:6969/superadmin/sign-in):
 

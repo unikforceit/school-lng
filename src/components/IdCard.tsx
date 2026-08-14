@@ -1,53 +1,33 @@
 "use client";
 
-import { useState } from "react";
-import type { Role } from "@/lib/auth";
+import { useEffect,useState } from "react";
+import { flushSync } from "react-dom";
+import type { IdCardPerson } from "@/lib/id-card";
+import { useLanguage } from "@/components/LanguageProvider";
 
-export type IdCardPerson={key:string;id:string;name:string;role:Role;email:string;details:string;grade:number;className:string;bloodType:string;photoUrl:string;qrCode:string};
+function CardFace({person,school,academicYear}:{person:IdCardPerson;school:string;academicYear:string}){
+  const {t}=useLanguage();
+  const initials=person.name.split(/\s+/).filter(Boolean).map(part=>part[0]).slice(0,2).join("").toUpperCase();
+  const detail=person.kind==="student"?`${t("grade")} ${person.grade} · ${t("class")} ${person.className}`:t(person.kind==="platform"?"platformIdentity":person.kind==="guardian"?"guardianIdentity":"staffIdentity");
+  const roleKey=person.role==="superadmin"?"superadmin":person.role;
+  return <article dir="ltr" aria-label={`${person.name} school identity card`} className="id-card-print-area id-card-face relative aspect-[1.586/1] w-full overflow-hidden rounded-[22px] border border-slate-200 bg-white text-[#0c2237] shadow-2xl">
+    <div aria-hidden="true" className="absolute -right-24 -top-28 h-72 w-72 rounded-full bg-[#efa900]"/><div aria-hidden="true" className="absolute -bottom-28 -left-16 h-56 w-56 rounded-full bg-[#fff1c4]"/><div className="absolute inset-x-0 top-0 h-3 bg-[#0c2237]"/>
+    <div className="relative flex h-full flex-col p-[5.2%]"><header className="flex items-start justify-between gap-4"><div className="min-w-0"><p className="id-card-school truncate text-[clamp(.72rem,2.2vw,1rem)] font-black uppercase tracking-[.12em]">{school}</p><p className="id-card-official mt-0.5 text-[clamp(.52rem,1.6vw,.7rem)] font-semibold uppercase tracking-[.18em] text-[#b77900]">{t("officialId")}</p></div><span className="id-card-role relative rounded-full bg-[#0c2237] px-3 py-1 text-[clamp(.5rem,1.5vw,.68rem)] font-bold uppercase tracking-wider text-white">{t(roleKey)}</span></header>
+      <div className="mt-[5%] grid min-h-0 flex-1 grid-cols-[24%_1fr_25%] items-center gap-[4%]"><div className="id-card-avatar flex aspect-square items-center justify-center overflow-hidden rounded-full border-4 border-[#efa900] bg-[#fff5d8] text-[clamp(1.3rem,5vw,2.15rem)] font-black" aria-label={`${person.name} photo`}>{person.photoUrl?<img src={person.photoUrl} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer"/>:initials}</div><div className="min-w-0 self-center"><p className="id-card-holder-label text-[clamp(.52rem,1.6vw,.7rem)] font-semibold uppercase tracking-[.16em] text-slate-400">{t("cardHolder")}</p><h2 className="id-card-name mt-1 truncate text-[clamp(1rem,4vw,1.7rem)] font-black leading-tight">{person.name}</h2><p className="id-card-detail mt-1 truncate text-[clamp(.58rem,1.8vw,.78rem)] font-semibold text-[#b77900]">{detail}</p><dl className="id-card-data mt-[5%] grid grid-cols-2 gap-x-3 gap-y-[4%] text-[clamp(.52rem,1.6vw,.7rem)]"><div><dt className="uppercase tracking-wider text-slate-400">{t("idNumber")}</dt><dd className="truncate font-black tracking-wide">{person.id}</dd></div><div><dt className="uppercase tracking-wider text-slate-400">{t("bloodType")}</dt><dd className="truncate font-black">{person.bloodType}</dd></div><div><dt className="uppercase tracking-wider text-slate-400">{t("grade")}</dt><dd className="truncate font-semibold">{person.grade}</dd></div><div><dt className="uppercase tracking-wider text-slate-400">{t("class")}</dt><dd className="truncate font-semibold">{person.className}</dd></div></dl></div><div className="relative self-end text-center"><img src={person.qrCode} alt={`QR code to verify ${person.name}`} className="id-card-qr aspect-square w-full rounded-lg bg-white p-1"/><p className="id-card-scan mt-1 text-[clamp(.45rem,1.35vw,.58rem)] font-bold uppercase tracking-wider">{t("scanVerify")}</p></div></div>
+      <footer className="id-card-footer mt-[3%] flex items-end justify-between gap-3 border-t border-slate-200 pt-[2.5%] text-[clamp(.48rem,1.45vw,.64rem)]"><span className="font-semibold text-slate-500">{t("academicYear")} <strong className="text-[#0c2237]">{academicYear}</strong></span><span className="font-black uppercase tracking-[.16em]">{t("secureId")}</span></footer></div>
+  </article>;
+}
 
 export default function IdCard({people,currentKey,school,academicYear}:{people:IdCardPerson[];currentKey:string;school:string;academicYear:string}){
-  const [selectedKey,setSelectedKey]=useState(currentKey);
+  const {t}=useLanguage(),[selectedKey,setSelectedKey]=useState(currentKey),[printMode,setPrintMode]=useState<"selected"|"all"|null>(null);
   const person=people.find(item=>item.key===selectedKey)??people[0];
-  if(!person)return <p role="alert" className="rounded-xl bg-red-50 p-5 text-red-700">No identity record is available.</p>;
-  const initials=person.name.split(/\s+/).filter(Boolean).map(part=>part[0]).slice(0,2).join("").toUpperCase();
-  return <div className="space-y-5">
-    <header className="id-card-controls flex flex-wrap items-center justify-between gap-4 rounded-xl bg-[#0c2237] p-6 text-white">
-      <div><p className="text-xs font-bold uppercase tracking-[.2em] text-[#efa900]">Identity center</p><h1 className="mt-2 text-2xl font-bold">Student Smart Card</h1><p className="mt-1 text-sm text-slate-300">Secure QR verification · print at actual size (85.6 × 53.98 mm).</p></div>
-      <button type="button" onClick={()=>window.print()} className="rounded-lg bg-[#efa900] px-5 py-3 font-bold text-[#0c2237] transition hover:bg-[#ffc43d]">Print / Save PDF</button>
-    </header>
-    {people.length>1&&<label className="id-card-controls block max-w-lg text-sm font-semibold">Choose an authorized student<select value={person.key} onChange={event=>setSelectedKey(event.target.value)} className="mt-2 w-full rounded-lg border bg-white p-3">{people.map(item=><option key={item.key} value={item.key}>{item.name} — {item.className} — {item.id}</option>)}</select></label>}
-    <section aria-label="ID card print preview" className="rounded-2xl border border-dashed border-slate-300 bg-slate-100 p-3 sm:p-8">
-      <article aria-label={`${person.name} school identity card`} className="id-card-print-area relative mx-auto aspect-[1.586/1] w-full max-w-[540px] overflow-hidden rounded-[22px] border border-slate-200 bg-white text-[#0c2237] shadow-2xl">
-        <div aria-hidden="true" className="absolute -right-24 -top-28 h-72 w-72 rounded-full bg-[#efa900]"/>
-        <div aria-hidden="true" className="absolute -bottom-28 -left-16 h-56 w-56 rounded-full bg-[#fff1c4]"/>
-        <div className="absolute inset-x-0 top-0 h-3 bg-[#0c2237]"/>
-        <div className="relative flex h-full flex-col p-[5.2%]">
-          <header className="flex items-start justify-between gap-4">
-            <div className="min-w-0"><p className="truncate text-[clamp(.72rem,2.2vw,1rem)] font-black uppercase tracking-[.12em]">{school}</p><p className="mt-0.5 text-[clamp(.52rem,1.6vw,.7rem)] font-semibold uppercase tracking-[.18em] text-[#b77900]">Official identification</p></div>
-            <span className="relative rounded-full bg-[#0c2237] px-3 py-1 text-[clamp(.5rem,1.5vw,.68rem)] font-bold uppercase tracking-wider text-white">{person.role}</span>
-          </header>
-          <div className="mt-[5%] grid min-h-0 flex-1 grid-cols-[24%_1fr_25%] items-center gap-[4%]">
-            <div className="flex aspect-square items-center justify-center overflow-hidden rounded-full border-4 border-[#efa900] bg-[#fff5d8] text-[clamp(1.3rem,5vw,2.15rem)] font-black" aria-label={`${person.name} photo`}>{person.photoUrl?<img src={person.photoUrl} alt="" className="h-full w-full object-cover" referrerPolicy="no-referrer"/>:initials}</div>
-            <div className="min-w-0 self-center">
-              <p className="text-[clamp(.52rem,1.6vw,.7rem)] font-semibold uppercase tracking-[.16em] text-slate-400">Card holder</p>
-              <h2 className="mt-1 truncate text-[clamp(1rem,4vw,1.7rem)] font-black leading-tight">{person.name}</h2>
-              <p className="mt-1 truncate text-[clamp(.58rem,1.8vw,.78rem)] font-semibold text-[#b77900]">{person.details}</p>
-              <dl className="mt-[5%] grid grid-cols-2 gap-x-3 gap-y-[4%] text-[clamp(.52rem,1.6vw,.7rem)]">
-                <div><dt className="uppercase tracking-wider text-slate-400">ID number</dt><dd className="truncate font-black tracking-wide">{person.id}</dd></div>
-                <div><dt className="uppercase tracking-wider text-slate-400">Blood type</dt><dd className="truncate font-black">{person.bloodType}</dd></div>
-                <div><dt className="uppercase tracking-wider text-slate-400">Grade</dt><dd className="truncate font-semibold">{person.grade}</dd></div>
-                <div><dt className="uppercase tracking-wider text-slate-400">Class</dt><dd className="truncate font-semibold">{person.className}</dd></div>
-              </dl>
-            </div>
-            <div className="relative self-end text-center">
-              {/* QR images are generated server-side from a signed, expiring verification token. */}
-              <img src={person.qrCode} alt={`QR code to verify ${person.name}'s ID card`} className="aspect-square w-full rounded-lg bg-white p-1"/>
-              <p className="mt-1 text-[clamp(.45rem,1.35vw,.58rem)] font-bold uppercase tracking-wider">Scan to verify</p>
-            </div>
-          </div>
-          <footer className="mt-[3%] flex items-end justify-between gap-3 border-t border-slate-200 pt-[2.5%] text-[clamp(.48rem,1.45vw,.64rem)]"><span className="font-semibold text-slate-500">Academic year <strong className="text-[#0c2237]">{academicYear}</strong></span><span className="font-black uppercase tracking-[.16em]">SIME Secure ID</span></footer>
-        </div>
-      </article>
-    </section>
+  useEffect(()=>{const done=()=>{delete document.body.dataset.idPrintMode;setPrintMode(null)};window.addEventListener("afterprint",done);return()=>window.removeEventListener("afterprint",done)},[]);
+  if(!person)return <p role="alert" className="rounded-xl bg-red-50 p-5 text-red-700">{t("noIdentity")}</p>;
+  function print(mode:"selected"|"all"){flushSync(()=>setPrintMode(mode));document.body.dataset.idPrintMode=mode;window.print()}
+  const printable=printMode==="all"?people:[person];
+  return <div className="space-y-5"><header className="id-card-controls flex flex-wrap items-center justify-between gap-4 rounded-xl bg-[#0c2237] p-6 text-white"><div><p className="text-xs font-bold uppercase tracking-[.2em] text-[#efa900]">{t("identityCenter")}</p><h1 className="mt-2 text-2xl font-bold">{t("smartCards")}</h1><p className="mt-1 text-sm text-slate-300">{t("cardHelp")}</p></div><div className="flex flex-wrap gap-2"><button type="button" onClick={()=>print("selected")} className="rounded-lg bg-[#efa900] px-5 py-3 font-bold text-[#0c2237] transition hover:bg-[#ffc43d]">{t("printSelected")}</button>{people.length>1&&<button type="button" onClick={()=>print("all")} className="rounded-lg border border-white/30 bg-white/10 px-5 py-3 font-bold text-white transition hover:bg-white/20">{t("printAll")} ({people.length})</button>}</div></header>
+    {people.length>1&&<label className="id-card-controls block max-w-lg text-sm font-semibold">{t("chooseIdentity")}<select value={person.key} onChange={event=>setSelectedKey(event.target.value)} className="mt-2 w-full rounded-lg border bg-white p-3">{people.map(item=><option key={item.key} value={item.key}>{item.name} — {t(item.role==="superadmin"?"superadmin":item.role)} — {item.id}</option>)}</select></label>}
+    <section aria-label={t("printPreview")} className="rounded-2xl border border-dashed border-slate-300 bg-slate-100 p-3 sm:p-8"><div className="mx-auto w-full max-w-[540px]"><CardFace person={person} school={school} academicYear={academicYear}/></div></section>
+    {printMode&&<section aria-label={`${printable.length} ${printable.length===1?t("card"):t("cards")}`} className={`id-card-print-root ${printMode==="all"?"id-card-print-grid":"id-card-print-single"}`}>{printable.map(item=><CardFace key={item.key} person={item} school={school} academicYear={academicYear}/>)}</section>}
   </div>;
 }
