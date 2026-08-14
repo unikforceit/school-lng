@@ -9,6 +9,15 @@ type SupabaseUser = {
   id: string;
   email?: string;
   app_metadata?: Record<string, unknown>;
+  user_metadata?: Record<string, unknown>;
+};
+
+export type EditableUserProfile = {
+  displayName: string;
+  phone: string;
+  address: string;
+  bio: string;
+  avatarUrl: string;
 };
 
 export type SupabaseTokens = {
@@ -38,16 +47,32 @@ async function authRequest<T>(path: string, init: RequestInit) {
 
 export function sessionFromUser(user: SupabaseUser, expiresAt = Date.now() + 60 * 60 * 1000): Session | null {
   const metadata = user.app_metadata || {};
+  const profile = user.user_metadata || {};
   const role = metadata.role;
   const tenantId = metadata.tenant_id;
   const email = user.email?.toLowerCase();
   if (!email || typeof tenantId !== "string" || !roles.has(role as Role)) return null;
   return {
     userId: email,
-    name: typeof metadata.display_name === "string" ? metadata.display_name : email,
+    name: typeof profile.display_name === "string" && profile.display_name.trim() ? profile.display_name.trim() : typeof metadata.display_name === "string" ? metadata.display_name : email,
     role: role as Role,
     tenantId,
     exp: expiresAt,
+  };
+}
+
+function metadataString(metadata: Record<string, unknown> | undefined, key: string) {
+  const value = metadata?.[key];
+  return typeof value === "string" ? value : "";
+}
+
+export function editableProfileFromUser(user: SupabaseUser): EditableUserProfile {
+  return {
+    displayName: metadataString(user.user_metadata, "display_name") || metadataString(user.app_metadata, "display_name") || user.email || "",
+    phone: metadataString(user.user_metadata, "phone"),
+    address: metadataString(user.user_metadata, "address"),
+    bio: metadataString(user.user_metadata, "bio"),
+    avatarUrl: metadataString(user.user_metadata, "avatar_url"),
   };
 }
 
@@ -83,6 +108,22 @@ export async function userFromAccessToken(accessToken: string) {
   } catch {
     return null;
   }
+}
+
+export function updateUserMetadata(accessToken: string, profile: EditableUserProfile) {
+  return authRequest<SupabaseUser>("/user", {
+    method: "PUT",
+    headers: { Authorization: `Bearer ${accessToken}` },
+    body: JSON.stringify({
+      data: {
+        display_name: profile.displayName,
+        phone: profile.phone,
+        address: profile.address,
+        bio: profile.bio,
+        avatar_url: profile.avatarUrl,
+      },
+    }),
+  });
 }
 
 export async function signOutAccessToken(accessToken: string) {

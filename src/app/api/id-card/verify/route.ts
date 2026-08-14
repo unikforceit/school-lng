@@ -1,11 +1,12 @@
 import { db } from "@/lib/db";
-import { verifyIdCardToken } from "@/lib/id-card";
+import { isIdCardSigningConfigured, verifyIdCardToken } from "@/lib/id-card";
 import { jsonError } from "@/lib/http";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
+  if(!isIdCardSigningConfigured())return jsonError("ID card verification is not configured",503);
   const token = new URL(request.url).searchParams.get("token") || "";
   const identity = verifyIdCardToken(token);
   if (!identity) return jsonError("This ID card is invalid or expired", 400);

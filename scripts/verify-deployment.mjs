@@ -19,6 +19,9 @@ const stream = read("src/app/api/notifications/stream/route.ts");
 const guide = read("DEPLOYMENT.md");
 const idCard = read("src/components/IdCard.tsx");
 const i18n = read("src/lib/i18n.ts");
+const profileApi = read("src/app/api/profile/route.ts");
+const supabaseAuth = read("src/lib/supabase-auth.ts");
+const cardSecretBuild = read("scripts/prepare-card-secret.mjs");
 
 check(pkg.engines?.node === ">=22 <23", "Node.js production runtime is pinned to the supported major");
 check(config.includes('output: "standalone"'), "Next.js standalone output is enabled");
@@ -33,6 +36,9 @@ check(stream.includes("last-event-id") && stream.includes('X-Accel-Buffering'), 
 check(guide.includes("Railway") && guide.includes("Vercel + Supabase") && guide.includes("Render + persistent disk") && guide.includes("Fly.io + volume") && guide.includes("cPanel") && guide.includes("Docker VPS"), "deployment guide covers supported hosting paths");
 check(i18n.includes('code: "ar"') && i18n.includes('code: "fr"') && i18n.includes('direction: "rtl"'), "multilingual catalog includes Arabic, French, and RTL metadata");
 check(idCard.includes('print("selected")') && idCard.includes('print("all")') && css.includes("85.6mm") && css.includes("53.98mm"), "ID cards support selected and authorized bulk printing at ISO card size");
+check(profileApi.includes(".strict()") && profileApi.includes("hasValidOrigin") && profileApi.includes("updateUserMetadata"), "profile editing validates an allowlist and enforces same-origin writes");
+check(supabaseAuth.includes("user.user_metadata") && supabaseAuth.includes("metadata.role") && !supabaseAuth.includes("profile.role"), "editable user metadata is separated from app-controlled authorization metadata");
+check(pkg.scripts?.prebuild?.includes("prepare:card-secret") && cardSecretBuild.includes("randomBytes(32)") && read(".gitignore").includes("id-card-secret.ts"), "Vercel builds generate an uncommitted cryptographic ID-card signing key");
 
 if (failures.length) {
   console.error(`FAILED ${failures.length}/${checks}\n${failures.join("\n")}`);

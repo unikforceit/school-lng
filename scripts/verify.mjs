@@ -73,8 +73,14 @@ try {
       const schoolSearch=await request("/api/search?q=demo-school",{headers:{cookie:cookies[role]}});const schoolPayload=await schoolSearch.json().catch(()=>null);
       check(schoolSearch.status===200&&schoolPayload?.data?.some(item=>item.href==="/superadmin/schools/demo-school"),"superadmin school search redirect");
     }
-    const rolePages=role==="superadmin"?["/superadmin"]:[`/${role}`,...sharedPages];
+    const rolePages=role==="superadmin"?["/superadmin","/superadmin/profile"]:[`/${role}`,...sharedPages];
     for (const page of rolePages) { const response=await request(page,{headers:{cookie:cookies[role]}}); check(response.status===200,`${role} page ${page}`,String(response.status)); }
+    const profileResponse=await request("/api/profile",{headers:{cookie:cookies[role]}});const profilePayload=await profileResponse.json().catch(()=>null);
+    check(profileResponse.status===200&&profilePayload?.data?.role===role&&profilePayload.data.email===email,`${role} editable profile access`,String(profileResponse.status));
+    const savedProfile=await request("/api/profile",{method:"PATCH",headers:{cookie:cookies[role],origin:base,"content-type":"application/json"},body:JSON.stringify({displayName:profilePayload?.data?.displayName||email,phone:profilePayload?.data?.phone||"",address:profilePayload?.data?.address||"",bio:profilePayload?.data?.bio||"",avatarUrl:profilePayload?.data?.avatarUrl||""})});
+    check(savedProfile.status===200,`${role} non-sensitive profile update`,String(savedProfile.status));
+    const protectedProfile=await request("/api/profile",{method:"PATCH",headers:{cookie:cookies[role],origin:base,"content-type":"application/json"},body:JSON.stringify({displayName:profilePayload?.data?.displayName||email,phone:"",address:"",bio:"",avatarUrl:"",role:"superadmin"})});
+    check(protectedProfile.status===400,`${role} protected profile field rejected`,String(protectedProfile.status));
     for (const type of resources) {
       const allowed=roleResources[role].includes(type);
       const response=await request(`/api/resources/${type}`,{headers:{cookie:cookies[role]}});
@@ -91,6 +97,7 @@ try {
     const platform=await request("/api/platform/overview",{headers:{cookie:cookies[role]}});check(platform.status===(role==="superadmin"?200:403),`${role} platform API access`,String(platform.status));
     const refresh=await request("/api/auth/refresh",{method:"POST",headers:{cookie:cookies[role],origin:base}}); check(refresh.status===200,`${role} session refresh`,String(refresh.status));
   }
+  const crossSiteProfile=await request("/api/profile",{method:"PATCH",headers:{cookie:cookies.student,origin:"https://attacker.invalid","sec-fetch-site":"cross-site","content-type":"application/json"},body:JSON.stringify({displayName:"Blocked change",phone:"",address:"",bio:"",avatarUrl:""})});check(crossSiteProfile.status===403,"cross-site profile update rejected",String(crossSiteProfile.status));
   for(const page of ["/superadmin/schools","/superadmin/licenses","/superadmin/users","/superadmin/audit","/superadmin/settings","/superadmin/schools/demo-school"]){const response=await request(page,{headers:{cookie:cookies.superadmin}});check(response.status===200,`superadmin page ${page}`,String(response.status));}
   for(const endpoint of ["/api/platform/tenants","/api/platform/users","/api/platform/audit","/api/platform/settings"]){const response=await request(endpoint,{headers:{cookie:cookies.superadmin}});check(response.status===200,`superadmin API ${endpoint}`,String(response.status));const denied=await request(endpoint,{headers:{cookie:cookies.admin}});check(denied.status===403,`admin denied ${endpoint}`,String(denied.status));}
   const platformOnSchoolLogin=await request("/api/auth/login",{method:"POST",headers:{"content-type":"application/json",origin:base},body:JSON.stringify({email:accounts.superadmin[1],password:accounts.superadmin[2],tenantId:"platform"})});check(platformOnSchoolLogin.status===403,"school login rejects platform account",String(platformOnSchoolLogin.status));

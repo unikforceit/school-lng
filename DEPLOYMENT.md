@@ -45,6 +45,8 @@ The application currently stores all data in SQLite at `./data/sime.db`. A host 
 
 Generate secrets locally with `openssl rand -base64 48`.
 
+`ID_CARD_SECRET` is optional because every build generates a private server-only signing key. Set a stable value in the host's secret manager when printed QR cards must remain verifiable after a later deployment.
+
 ## Vercel + Supabase: best long-term architecture
 
 Supabase Auth is connected and all demo roles can sign in on Vercel. The application uses `/tmp/sime.db` there so pages can render, but Vercel Functions do not provide shared persistent local storage: edits can disappear after a cold start. Treat it only as a synthetic-data preview until `src/lib/db.ts` and its synchronous SQL consumers are migrated from `better-sqlite3` to PostgreSQL.

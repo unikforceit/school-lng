@@ -43,3 +43,4 @@ data/*.db-wal
 
 # Local audits and generated workspace artifacts
 /work/
+/src/generated/id-card-secret.ts

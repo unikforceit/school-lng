@@ -38,7 +38,8 @@ export async function buildIdCardData(session:Session,origin:string){
     const student=db.prepare(`${studentSelect} WHERE tenant_id=? AND (email=? OR name=?) ORDER BY CASE WHEN email=? THEN 0 ELSE 1 END LIMIT 1`).get(session.tenantId,session.userId,session.name,session.userId) as Student|undefined;
     if(student)identities.push(studentIdentity(student));else if(currentUser)identities.push(userIdentity(currentUser));
   }
-  const unique=[...new Map(identities.map(item=>[`${item.source}:${item.recordId}`,item])).values()];
+  const personalized=identities.map(item=>item.email.toLowerCase()===session.userId.toLowerCase()?{...item,name:session.name}:item);
+  const unique=[...new Map(personalized.map(item=>[`${item.source}:${item.recordId}`,item])).values()];
   const {label:academicYear,validUntil}=currentAcademicYear();
   const people:IdCardPerson[]=await Promise.all(unique.map(async item=>{
     const token=createIdCardToken({tenantId:session.tenantId,source:item.source,recordId:item.recordId,cardId:item.id,name:item.name,role:item.role,exp:Math.floor(validUntil.getTime()/1000)});

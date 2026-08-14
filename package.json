@@ -6,6 +6,9 @@
     "node": ">=22 <23"
   },
   "scripts": {
+    "prepare:card-secret": "node scripts/prepare-card-secret.mjs",
+    "prebuild": "npm run prepare:card-secret",
+    "prelint": "npm run prepare:card-secret",
     "dev": "next dev --port ${PORT:-6969}",
     "build": "next build --webpack && node scripts/prepare-standalone.mjs",
     "start": "node scripts/start.mjs",

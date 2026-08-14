@@ -1,5 +1,6 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import type { Role } from "@/lib/auth";
+import { BUILD_ID_CARD_SECRET } from "@/generated/id-card-secret";
 
 export type IdCardTokenPayload = {
   tenantId: string;
@@ -17,10 +18,15 @@ export type IdCardPerson={
 };
 
 function secret() {
-  if (process.env.NODE_ENV === "production" && !process.env.ID_CARD_SECRET && !process.env.AUTH_SECRET) {
+  const value=process.env.ID_CARD_SECRET || process.env.AUTH_SECRET || BUILD_ID_CARD_SECRET;
+  if (process.env.NODE_ENV === "production" && !value) {
     throw new Error("ID_CARD_SECRET or AUTH_SECRET is required in production");
   }
-  return process.env.ID_CARD_SECRET || process.env.AUTH_SECRET || "development-only-id-card-secret";
+  return value || "development-only-id-card-secret";
+}
+
+export function isIdCardSigningConfigured() {
+  return process.env.NODE_ENV !== "production" || Boolean(process.env.ID_CARD_SECRET || process.env.AUTH_SECRET || BUILD_ID_CARD_SECRET);
 }
 
 function signature(value: string) {

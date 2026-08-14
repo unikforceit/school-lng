@@ -1,0 +1,3 @@
+export default function IdCardConfigurationError(){
+  return <section role="alert" className="mx-auto max-w-2xl rounded-2xl border border-amber-200 bg-amber-50 p-6 text-[#102039] shadow-sm sm:p-8"><p className="text-xs font-bold uppercase tracking-[.18em] text-amber-700">ID card service unavailable</p><h1 className="mt-2 text-2xl font-extrabold">Secure card signing is not configured</h1><p className="mt-3 text-sm leading-6 text-slate-600">No account or school data was changed. A deployment administrator must add <code className="rounded bg-white px-1.5 py-0.5 font-mono text-xs">ID_CARD_SECRET</code> to the server environment and redeploy.</p></section>;
+}
