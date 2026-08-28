@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
+import { cookies } from "next/headers";
 import "./globals.css";
 import LanguageProvider from "@/components/LanguageProvider";
+import { isLanguage, languages } from "@/lib/i18n";
 
 export const metadata: Metadata = {
   title: "School-InG · GNG GROUP",
@@ -12,14 +14,17 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#102039", colorScheme: "light" };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const saved=(await cookies()).get("sime_language")?.value??null;
+  const language=isLanguage(saved)?saved:"fr";
+  const direction=languages.find(item=>item.code===language)?.direction??"ltr";
   return (
-    <html lang="fr" dir="ltr" suppressHydrationWarning>
-      <body><LanguageProvider><a href="#main-content" className="skip-link">Skip to main content</a>{children}</LanguageProvider></body>
+    <html lang={language} dir={direction} suppressHydrationWarning>
+      <body><LanguageProvider initialLanguage={language}><a href="#main-content" className="skip-link">Skip to main content</a>{children}</LanguageProvider></body>
     </html>
   );
 }
