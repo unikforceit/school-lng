@@ -11,7 +11,7 @@ const studentSelect="SELECT id,student_id studentId,name,email,grade,class_name 
 
 function userIdentity(user:User):Identity{
   const kind=user.role==="superadmin"?"platform":user.role==="parent"?"guardian":"staff";
-  return {source:"user",recordId:user.id,id:`SIME-${user.role.slice(0,3).toUpperCase()}-${String(user.id).padStart(4,"0")}`,name:user.name,email:user.email,role:user.role,kind,grade:"—",className:user.role==="superadmin"?"Platform":user.role==="parent"?"Guardian":"Staff",bloodType:"—",photoUrl:""};
+  return {source:"user",recordId:user.id,id:`GING-${user.role.slice(0,3).toUpperCase()}-${String(user.id).padStart(4,"0")}`,name:user.name,email:user.email,role:user.role,kind,grade:"—",className:user.role==="superadmin"?"Plateforme":user.role==="parent"?"Parent":"Personnel",bloodType:"—",photoUrl:""};
 }
 
 function studentIdentity(student:Student):Identity{
@@ -48,7 +48,7 @@ export async function buildIdCardData(session:Session,origin:string){
   }));
   const tenant=db.prepare("SELECT name FROM tenants WHERE id=?").get(session.tenantId) as {name:string}|undefined;
   const own=people.find(item=>item.email.toLowerCase()===session.userId.toLowerCase());
-  return {people,currentKey:own?.key||people[0]?.key||"",school:tenant?.name||"SIME School",academicYear};
+  return {people,currentKey:own?.key||people[0]?.key||"",school:tenant?.name||"School-InG",academicYear};
 }
 
 export function safeRequestOrigin(headers:Headers){

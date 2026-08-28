@@ -13,7 +13,7 @@ export function roleAllowed(s:AiSettings, role:Role) { return s.enabled && ({sup
 
 export type OpenRouterModel={id:string;name:string;contextLength:number;free:boolean;promptPrice:string;completionPrice:string};
 export async function fetchOpenRouterModels(apiKey:string){
-  const response=await fetch("https://openrouter.ai/api/v1/models",{headers:{Authorization:`Bearer ${apiKey}`,"HTTP-Referer":process.env.NEXT_PUBLIC_APP_URL??"http://localhost:6969","X-Title":"SIME SAGE"},cache:"no-store",signal:AbortSignal.timeout(20_000)});
+  const response=await fetch("https://openrouter.ai/api/v1/models",{headers:{Authorization:`Bearer ${apiKey}`,"HTTP-Referer":process.env.NEXT_PUBLIC_APP_URL??"http://localhost:6969","X-Title":"School-InG SAGE"},cache:"no-store",signal:AbortSignal.timeout(20_000)});
   if(!response.ok)throw new Error(response.status===401?"The OpenRouter API key is invalid.":`OpenRouter connection failed (${response.status}).`);
   const payload=await response.json() as {data?:Array<{id?:string;name?:string;context_length?:number;pricing?:{prompt?:string;completion?:string}}>};
   return (payload.data??[]).filter(item=>item.id).map(item=>{const prompt=String(item.pricing?.prompt??""),completion=String(item.pricing?.completion??"");return {id:item.id!,name:item.name||item.id!,contextLength:Number(item.context_length)||0,free:Number(prompt)===0&&Number(completion)===0,promptPrice:prompt,completionPrice:completion} satisfies OpenRouterModel}).sort((a,b)=>Number(b.free)-Number(a.free)||a.name.localeCompare(b.name));

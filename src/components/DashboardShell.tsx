@@ -20,7 +20,7 @@ type Props = {
 function Brand({ role, onNavigate }: { role: Role; onNavigate?: () => void }) {
   const {t}=useLanguage();
   return <Link href={role === "superadmin" ? "/superadmin" : `/${role}`} onClick={onNavigate} className="mb-2 flex h-[72px] items-center justify-start gap-3 px-2">
-    <Image src="/design/brand-logo.png" alt={role === "superadmin" ? "SIME platform" : "Olden School"} width={118} height={48} className="h-10 w-auto object-contain" priority />
+    <Image src="/design/school-ing-logo.png" alt={role === "superadmin" ? "School-InG platform" : "School-InG · GNG GROUP"} width={150} height={50} className="h-11 w-auto object-contain" priority />
     <span className="sr-only">{t("dashboardHome")}</span>
   </Link>;
 }

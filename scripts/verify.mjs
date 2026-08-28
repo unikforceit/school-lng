@@ -20,11 +20,11 @@ function cookieFrom(response) {
 }
 
 const accounts = {
-  superadmin: ["platform", "superadmin@sime.local", "SuperAdmin123!"],
-  admin: ["demo-school", "admin@sime.local", "ChangeMe123!"],
-  teacher: ["demo-school", "teacher@sime.local", "Teacher123!"],
-  student: ["demo-school", "student@sime.local", "Student123!"],
-  parent: ["demo-school", "parent@sime.local", "Parent123!"],
+  superadmin: ["platform", "superadmin@school-ing.gn", "SuperAdmin123!"],
+  admin: ["demo-school", "admin@school-ing.gn", "ChangeMe123!"],
+  teacher: ["demo-school", "teacher@school-ing.gn", "Teacher123!"],
+  student: ["demo-school", "student@school-ing.gn", "Student123!"],
+  parent: ["demo-school", "parent@school-ing.gn", "Parent123!"],
 };
 const resources = ["teachers","parents","subjects","classes","lessons","exams","assignments","results","attendance","events","messages","announcements"];
 const sharedPages = ["/ai","/id-card","/profile","/settings"];
@@ -42,8 +42,8 @@ try {
   check(anonymous.status === 401, "anonymous security denial", String(anonymous.status));
   const anonymousSearch = await request("/api/search?q=dashboard");
   check(anonymousSearch.status === 401, "anonymous search denial", String(anonymousSearch.status));
-  const proxySafeLogin=await request("/api/auth/login",{method:"POST",headers:{"content-type":"application/json",origin:"http://lan-proxy.internal:6969","sec-fetch-site":"same-origin"},body:JSON.stringify({tenantId:"demo-school",email:"admin@sime.local",password:"ChangeMe123!"})});check(proxySafeLogin.status===200,"same-origin login survives proxy host mismatch",String(proxySafeLogin.status));
-  const crossSiteLogin=await request("/api/auth/login",{method:"POST",headers:{"content-type":"application/json",origin:"https://attacker.invalid","sec-fetch-site":"cross-site"},body:JSON.stringify({tenantId:"demo-school",email:"admin@sime.local",password:"ChangeMe123!"})});check(crossSiteLogin.status===403,"cross-site login rejected",String(crossSiteLogin.status));
+  const proxySafeLogin=await request("/api/auth/login",{method:"POST",headers:{"content-type":"application/json",origin:"http://lan-proxy.internal:6969","sec-fetch-site":"same-origin"},body:JSON.stringify({tenantId:"demo-school",email:"admin@school-ing.gn",password:"ChangeMe123!"})});check(proxySafeLogin.status===200,"same-origin login survives proxy host mismatch",String(proxySafeLogin.status));
+  const crossSiteLogin=await request("/api/auth/login",{method:"POST",headers:{"content-type":"application/json",origin:"https://attacker.invalid","sec-fetch-site":"cross-site"},body:JSON.stringify({tenantId:"demo-school",email:"admin@school-ing.gn",password:"ChangeMe123!"})});check(crossSiteLogin.status===403,"cross-site login rejected",String(crossSiteLogin.status));
   const platformSignIn=await request("/superadmin/sign-in");check(platformSignIn.status===200,"separate superadmin sign-in page",String(platformSignIn.status));
   const anonymousPlatform=await request("/superadmin");check(anonymousPlatform.status===307&&anonymousPlatform.headers.get("location")?.endsWith("/superadmin/sign-in"),"anonymous platform redirect",`${anonymousPlatform.status} ${anonymousPlatform.headers.get("location")}`);
   const cookies = {};
@@ -60,12 +60,12 @@ try {
     const searchPayload=await searchResponse.json().catch(()=>null);
     check(searchResponse.status===200&&Array.isArray(searchPayload?.data),`${role} global search`,String(searchResponse.status));
     if(role==="admin"||role==="teacher"){
-      const peopleSearch=await request("/api/search?q=Jessica",{headers:{cookie:cookies[role]}});const peoplePayload=await peopleSearch.json().catch(()=>null);
+      const peopleSearch=await request("/api/search?q=Mariama",{headers:{cookie:cookies[role]}});const peoplePayload=await peopleSearch.json().catch(()=>null);
       check(peopleSearch.status===200&&peoplePayload?.data?.some(item=>item.category==="Student"&&item.href.startsWith("/list/students/")),`${role} student search redirect`);
     }
     if(role==="student"||role==="parent"){
       const privateSearch=await request("/api/search?q=teacher%40sime.local",{headers:{cookie:cookies[role]}});const privatePayload=await privateSearch.json().catch(()=>null);
-      check(privateSearch.status===200&&!privatePayload?.data?.some(item=>item.title==="Emily Anderson"),`${role} search hides teacher contact fields`);
+      check(privateSearch.status===200&&!privatePayload?.data?.some(item=>item.title==="Ibrahima Condé"),`${role} search hides teacher contact fields`);
       const otherStudent=await request("/api/search?q=Nabil",{headers:{cookie:cookies[role]}});const otherPayload=await otherStudent.json().catch(()=>null);
       check(otherStudent.status===200&&!otherPayload?.data?.some(item=>["Results","Attendance","Student"].includes(item.category)),`${role} search hides other student records`);
     }
@@ -103,10 +103,10 @@ try {
   const platformOnSchoolLogin=await request("/api/auth/login",{method:"POST",headers:{"content-type":"application/json",origin:base},body:JSON.stringify({email:accounts.superadmin[1],password:accounts.superadmin[2],tenantId:"platform"})});check(platformOnSchoolLogin.status===403,"school login rejects platform account",String(platformOnSchoolLogin.status));
   const schoolOnPlatformLogin=await request("/api/platform/auth/login",{method:"POST",headers:{"content-type":"application/json",origin:base},body:JSON.stringify({email:accounts.admin[1],password:accounts.admin[2]})});check(schoolOnPlatformLogin.status===403,"platform login rejects school account",String(schoolOnPlatformLogin.status));
   const cardExpectations={
-    admin:{present:["Devon Harper","Emily Anderson","Sophia Brown","Jessica Rose","Amina Rahman","Nabil Hasan","Sara Ahmed"],absent:["Alex Morgan","Maya Chen"]},
-    teacher:{present:["Emily Anderson","Jessica Rose","Amina Rahman","Nabil Hasan"],absent:["Sara Ahmed","Alex Morgan","Maya Chen"]},
-    student:{present:["Jessica Rose"],absent:["Amina Rahman","Nabil Hasan","Sara Ahmed","Alex Morgan","Maya Chen"]},
-    parent:{present:["Sophia Brown","Jessica Rose"],absent:["Amina Rahman","Nabil Hasan","Sara Ahmed","Alex Morgan","Maya Chen"]},
+    admin:{present:["Aïssatou Camara","Ibrahima Condé","Fatoumata Sylla","Mariama Bah","Mamadou Sékou Diallo","Fodé Camara","Aminata Condé"],absent:["Sékouba Keïta"]},
+    teacher:{present:["Ibrahima Condé","Mariama Bah","Mamadou Sékou Diallo"],absent:["Fodé Camara","Aminata Condé","Sékouba Keïta"]},
+    student:{present:["Mariama Bah"],absent:["Mamadou Sékou Diallo","Fodé Camara","Aminata Condé","Sékouba Keïta"]},
+    parent:{present:["Fatoumata Sylla","Mariama Bah"],absent:["Mamadou Sékou Diallo","Fodé Camara","Aminata Condé","Sékouba Keïta"]},
   };
   for(const [role,expectation] of Object.entries(cardExpectations)){
     const response=await request("/id-card",{headers:{cookie:cookies[role]}});const html=await response.text();
@@ -114,7 +114,7 @@ try {
     check(expectation.absent.every(name=>!html.includes(name)),`${role} ID card excludes unauthorized identities`);
     check(html.includes("data:image/png;base64"),`${role} ID card contains QR code`);
   }
-  const platformCard=await request("/superadmin/id-card",{headers:{cookie:cookies.superadmin}});const platformCardHtml=await platformCard.text();check(platformCard.status===200&&platformCardHtml.includes("SIME Platform Owner")&&platformCardHtml.includes("data:image/png;base64"),"superadmin platform ID card");
+  const platformCard=await request("/superadmin/id-card",{headers:{cookie:cookies.superadmin}});const platformCardHtml=await platformCard.text();check(platformCard.status===200&&platformCardHtml.includes("Mamadou Diallo")&&platformCardHtml.includes("data:image/png;base64"),"superadmin platform ID card");
   const adminHeaders={cookie:cookies.admin,origin:base,"content-type":"application/json"};
   const suspendLicense=await request("/api/platform/tenants/demo-school",{method:"PATCH",headers:{cookie:cookies.superadmin,origin:base,"content-type":"application/json"},body:JSON.stringify({licenseStatus:"suspended"})});check(suspendLicense.status===200,"superadmin license suspension",String(suspendLicense.status));const licenseRevoked=await request("/api/auth/me",{headers:{cookie:cookies.admin}});check(licenseRevoked.status===401,"license immediately revokes school session",String(licenseRevoked.status));const restoreLicense=await request("/api/platform/tenants/demo-school",{method:"PATCH",headers:{cookie:cookies.superadmin,origin:base,"content-type":"application/json"},body:JSON.stringify({licenseStatus:"active",licenseExpiresAt:"2027-07-22"})});check(restoreLicense.status===200,"superadmin license restoration",String(restoreLicense.status));
   const suspendSchool=await request("/api/platform/tenants/sample-academy",{method:"PATCH",headers:{cookie:cookies.superadmin,origin:base,"content-type":"application/json"},body:JSON.stringify({active:false})});check(suspendSchool.status===200,"superadmin school suspension",String(suspendSchool.status));
@@ -124,8 +124,8 @@ try {
   originalGlobalLeaderboardPublic=(privacyDatabase.prepare("SELECT global_leaderboard_public value FROM gamification_settings WHERE tenant_id=?").get("demo-school")||{}).value;
   privacyDatabase.prepare("UPDATE gamification_settings SET global_leaderboard_public=0 WHERE tenant_id=?").run("demo-school");
   privacyDatabase.close();
-  const gameLeaderboard=await request("/api/gamification/leaderboard",{headers:{cookie:cookies.student}});const gameData=(await gameLeaderboard.json()).data;check(gameLeaderboard.status===200&&gameData.overall===null&&gameData.classes.length===1&&gameData.classes[0]==="8-A","student class-scoped private gamification leaderboard");
-  const teacherAward=await request("/api/gamification/points",{method:"POST",headers:{cookie:cookies.teacher,origin:base,"content-type":"application/json"},body:JSON.stringify({studentName:"Jessica Rose",className:"8-A",source:"behavior",note:"Verification award"})});check(teacherAward.status===201,"teacher points award",String(teacherAward.status));const awarded=await teacherAward.json().catch(()=>null);const awardId=awarded?.data?.id;
+  const gameLeaderboard=await request("/api/gamification/leaderboard",{headers:{cookie:cookies.student}});const gameData=(await gameLeaderboard.json()).data;check(gameLeaderboard.status===200&&gameData.overall===null&&gameData.classes.length===1&&gameData.classes[0]==="10e-A","student class-scoped private gamification leaderboard");
+  const teacherAward=await request("/api/gamification/points",{method:"POST",headers:{cookie:cookies.teacher,origin:base,"content-type":"application/json"},body:JSON.stringify({studentName:"Mariama Bah",className:"10e-A",source:"behavior",note:"Verification award"})});check(teacherAward.status===201,"teacher points award",String(teacherAward.status));const awarded=await teacherAward.json().catch(()=>null);const awardId=awarded?.data?.id;
   const create=await request("/api/resources/announcements",{method:"POST",headers:adminHeaders,body:JSON.stringify({title:"Verification record",class:"All",date:"2026-07-22"})});
   check(create.status===201,"admin resource create",String(create.status));
   const created=await create.json().catch(()=>null); const id=created?.data?.id;
@@ -139,11 +139,11 @@ try {
   const logoutPost=await request("/api/auth/logout",{method:"POST",headers:{cookie:cookies.parent,origin:base}});check(logoutPost.status===200&&(logoutPost.headers.get("set-cookie")||"").includes("Max-Age=0"),"POST logout clears session",String(logoutPost.status));
   const database=new Database(process.env.DATABASE_PATH||"./data/sime.db");
   if(awardId)database.prepare("DELETE FROM gamification_points WHERE id=?").run(awardId);
-  database.prepare("UPDATE users SET active=0 WHERE tenant_id=? AND email=?").run("demo-school","parent@sime.local");
+  database.prepare("UPDATE users SET active=0 WHERE tenant_id=? AND email=?").run("demo-school","parent@school-ing.gn");
   const revoked=await request("/api/auth/me",{headers:{cookie:cookies.parent}});check(revoked.status===401,"deactivated account session revocation",String(revoked.status));
-  database.prepare("UPDATE users SET active=1 WHERE tenant_id=? AND email=?").run("demo-school","parent@sime.local");database.close();
+  database.prepare("UPDATE users SET active=1 WHERE tenant_id=? AND email=?").run("demo-school","parent@school-ing.gn");database.close();
 } finally {
-  try { const database=new Database(process.env.DATABASE_PATH||"./data/sime.db");database.prepare("UPDATE users SET active=1 WHERE tenant_id=? AND email=?").run("demo-school","parent@sime.local");database.prepare("UPDATE tenants SET active=1 WHERE id='sample-academy'").run();database.prepare("DELETE FROM gamification_points WHERE note='Verification award'").run();if(originalGlobalLeaderboardPublic!==undefined)database.prepare("UPDATE gamification_settings SET global_leaderboard_public=? WHERE tenant_id=?").run(originalGlobalLeaderboardPublic,"demo-school");database.close(); } catch {}
+  try { const database=new Database(process.env.DATABASE_PATH||"./data/sime.db");database.prepare("UPDATE users SET active=1 WHERE tenant_id=? AND email=?").run("demo-school","parent@school-ing.gn");database.prepare("UPDATE tenants SET active=1 WHERE id='sample-academy'").run();database.prepare("DELETE FROM gamification_points WHERE note='Verification award'").run();if(originalGlobalLeaderboardPublic!==undefined)database.prepare("UPDATE gamification_settings SET global_leaderboard_public=? WHERE tenant_id=?").run(originalGlobalLeaderboardPublic,"demo-school");database.close(); } catch {}
   server?.kill("SIGTERM");
 }
 

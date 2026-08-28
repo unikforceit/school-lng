@@ -19,5 +19,5 @@ export async function GET(request: Request) {
   }
   if (!active) return jsonError("This ID card is no longer active", 404);
   const tenant = db.prepare("SELECT name FROM tenants WHERE id=?").get(identity.tenantId) as {name:string}|undefined;
-  return Response.json({ data: { valid: true, school: tenant?.name || "SIME School", cardId: identity.cardId, name: active.name, role: identity.role, validUntil: new Date(identity.exp * 1000).toISOString() } }, { headers: { "Cache-Control": "no-store" } });
+  return Response.json({ data: { valid: true, school: tenant?.name || "School-InG", cardId: identity.cardId, name: active.name, role: identity.role, validUntil: new Date(identity.exp * 1000).toISOString() } }, { headers: { "Cache-Control": "no-store" } });
 }

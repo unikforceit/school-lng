@@ -1,19 +1,320 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-type DashboardData={role:string;user:{name:string;email:string};students:number;genderCounts:Array<{gender:string;count:number}>;resourceCounts:Array<{type:string;count:number}>;recent:Array<{id:number;type:string;title:string;updatedAt:string}>};
-type Result={id:number;title:string;payload:Record<string,string|number>};
-const links:Record<string,string>={teachers:"/list/teachers",parents:"/list/parents",subjects:"/list/subjects",classes:"/list/classes",lessons:"/list/lessons",exams:"/list/exams",assignments:"/list/assignments",results:"/list/results",attendance:"/list/attendance",events:"/list/events",messages:"/list/messages",announcements:"/list/announcements"};
-const icons:Record<string,string>={Students:"/student.png",Teachers:"/teacher.png",Parents:"/parent.png",Classes:"/class.png"};
-async function read(path:string){const response=await fetch(path);const payload=await response.json().catch(()=>null);if(!response.ok)throw new Error(payload?.error||"Unable to load dashboard");return payload.data}
-export default function AdminDashboard(){
- const [data,setData]=useState<DashboardData|null>(null),[results,setResults]=useState<Result[]>([]),[error,setError]=useState("");
- useEffect(()=>{let active=true;void Promise.all([read("/api/dashboard"),read("/api/resources/results")]).then(([dashboard,resultRows])=>{if(active){setData(dashboard);setResults(resultRows)}}).catch(cause=>{if(active)setError(cause instanceof Error?cause.message:"Unable to load dashboard")});return()=>{active=false}},[]);
- const counts=useMemo(()=>new Map(data?.resourceCounts.map(item=>[item.type,item.count])||[]),[data]);
- if(error)return <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-6 text-red-700"><h1 className="font-bold">Dashboard unavailable</h1><p className="mt-1 text-sm">{error}</p></div>;
- if(!data)return <div className="rounded-xl bg-white p-10 text-center text-sm text-slate-400">Loading live school data…</div>;
- const genderTotal=data.genderCounts.reduce((sum,item)=>sum+item.count,0),female=data.genderCounts.find(x=>x.gender==="female")?.count||0,male=data.genderCounts.find(x=>x.gender==="male")?.count||0,femalePct=genderTotal?Math.round(female/genderTotal*100):0;
- const scores=results.slice(0,7).map(r=>Number(r.payload.score)||0);while(scores.length<7)scores.push([72,81,69,76,88,73,91][scores.length]);const points=scores.map((score,index)=>`${index*48+8},${118-score}`).join(" ");
- const metric=[["Students",data.students,"/list/students"],["Teachers",counts.get("teachers")||0,"/list/teachers"],["Parents",counts.get("parents")||0,"/list/parents"],["Classes",counts.get("classes")||0,"/list/classes"]] as const;
- return <div className="space-y-5"><header><p className="text-xs font-bold uppercase tracking-[.16em] text-[#c78a00]">Overview</p><div className="mt-1 flex flex-wrap items-end justify-between gap-2"><div><h1 className="text-2xl font-extrabold text-[#172033]">Dashboard</h1><p className="text-sm text-slate-500">Welcome back, {data.user.name}. Here is your school today.</p></div><time className="text-xs font-semibold text-slate-400">Live database · {new Date().toLocaleDateString()}</time></div></header><section aria-label="School totals" className="grid grid-cols-2 gap-3 xl:grid-cols-4">{metric.map(([label,value,href])=><Link key={label} href={href} className="flex items-center gap-3 rounded-xl border border-slate-100 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,.035)] transition hover:-translate-y-0.5 hover:shadow-md"><span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#fff5d5]"><img alt="" src={icons[label]} className="h-5 w-5"/></span><span><small className="block text-xs text-slate-500">{label}</small><strong className="text-2xl font-extrabold text-[#172033]">{value.toLocaleString()}</strong></span></Link>)}</section><section className="grid gap-4 xl:grid-cols-[.72fr_1.28fr]"><article className="rounded-xl border border-slate-100 bg-white p-5 shadow-sm"><div className="flex justify-between"><div><h2 className="font-extrabold">Students</h2><p className="text-xs text-slate-400">Gender distribution</p></div><select aria-label="Student grouping" className="rounded border border-slate-200 px-2 text-xs"><option>All classes</option></select></div><div className="mt-5 flex items-center justify-center"><div role="img" aria-label={`${female} female and ${male} male students`} className="relative flex h-44 w-44 items-center justify-center rounded-full" style={{background:`conic-gradient(#e9a900 0 ${femalePct}%,#8d2018 ${femalePct}% 100%)`}}><div className="flex h-32 w-32 flex-col items-center justify-center rounded-full bg-white"><strong className="text-3xl font-extrabold">{genderTotal}</strong><span className="text-xs text-slate-400">Students</span></div></div></div><div className="mt-4 flex justify-center gap-6 text-xs"><span><i className="mr-2 inline-block h-2 w-2 rounded-full bg-[#e9a900]"/>Female {female}</span><span><i className="mr-2 inline-block h-2 w-2 rounded-full bg-[#8d2018]"/>Male {male}</span></div></article><article className="rounded-xl border border-slate-100 bg-white p-5 shadow-sm"><div className="flex justify-between"><div><h2 className="font-extrabold">All exam results</h2><p className="text-xs text-slate-400">Recent student performance</p></div><Link href="/list/results" className="text-xs font-bold text-[#a16f00]">View results</Link></div><div className="mt-6 overflow-hidden"><svg role="img" aria-label={`Recent scores: ${scores.join(", ")}`} viewBox="0 0 310 130" className="h-52 w-full" preserveAspectRatio="none"><defs><linearGradient id="resultArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#eaa900" stopOpacity=".24"/><stop offset="1" stopColor="#eaa900" stopOpacity="0"/></linearGradient></defs>{[25,55,85,115].map(y=><line key={y} x1="0" x2="310" y1={y} y2={y} stroke="#eef0f2" strokeWidth="1"/>)}<polygon points={`8,125 ${points} 296,125`} fill="url(#resultArea)"/><polyline points={points} fill="none" stroke="#e3a000" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>{scores.map((score,index)=><circle key={index} cx={index*48+8} cy={118-score} r="4" fill="white" stroke="#8d2018" strokeWidth="2"/>)}</svg><div className="flex justify-between px-1 text-[10px] font-semibold text-slate-400">{["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(d=><span key={d}>{d}</span>)}</div></div></article></section><section className="grid gap-4 xl:grid-cols-[1.25fr_.75fr]"><article className="rounded-xl border border-slate-100 bg-white p-5 shadow-sm"><div className="flex justify-between"><div><h2 className="font-extrabold">Recent school activity</h2><p className="text-xs text-slate-400">Latest database updates</p></div><Link href="/list/students" className="text-xs font-bold text-[#a16f00]">Students list</Link></div><div className="mt-3 divide-y">{data.recent.slice(0,7).map(item=><Link key={`${item.type}-${item.id}`} href={links[item.type]||"/admin"} className="grid grid-cols-[1fr_auto] gap-4 py-3 text-sm hover:text-[#a16f00]"><span><b>{item.title}</b><small className="ml-2 capitalize text-slate-400">{item.type}</small></span><time className="text-xs text-slate-400">{item.updatedAt}</time></Link>)}</div></article><aside className="rounded-xl border border-slate-100 bg-white p-5 shadow-sm"><h2 className="font-extrabold">Quick access</h2><p className="text-xs text-slate-400">Academic operations</p><div className="mt-4 grid grid-cols-2 gap-2">{Object.entries(links).slice(0,10).map(([type,href])=><Link key={type} href={href} className="rounded-lg bg-[#fffaf0] p-3 text-xs font-bold capitalize text-[#8a6100] hover:bg-[#fff2c7]">{type}<span className="mt-1 block font-normal text-slate-400">{counts.get(type)||0} records</span></Link>)}</div></aside></section></div>
+type DashboardData = {
+  role: string;
+  user: { name: string; email: string };
+  students: number;
+  genderCounts: Array<{ gender: string; count: number }>;
+  resourceCounts: Array<{ type: string; count: number }>;
+  recent: Array<{ id: number; type: string; title: string; updatedAt: string }>;
+};
+type Result = {
+  id: number;
+  title: string;
+  payload: Record<string, string | number>;
+};
+const links: Record<string, string> = {
+  teachers: "/list/teachers",
+  parents: "/list/parents",
+  subjects: "/list/subjects",
+  classes: "/list/classes",
+  lessons: "/list/lessons",
+  exams: "/list/exams",
+  assignments: "/list/assignments",
+  results: "/list/results",
+  attendance: "/list/attendance",
+  events: "/list/events",
+  messages: "/list/messages",
+  announcements: "/list/announcements",
+};
+const icons: Record<string, string> = {
+  Students: "/student.png",
+  Teachers: "/teacher.png",
+  Parents: "/parent.png",
+  Classes: "/class.png",
+};
+async function read(path: string) {
+  const response = await fetch(path);
+  const payload = await response.json().catch(() => null);
+  if (!response.ok)
+    throw new Error(payload?.error || "Unable to load dashboard");
+  return payload.data;
+}
+export default function AdminDashboard() {
+  const [data, setData] = useState<DashboardData | null>(null),
+    [results, setResults] = useState<Result[]>([]),
+    [error, setError] = useState("");
+  useEffect(() => {
+    let active = true;
+    void Promise.all([read("/api/dashboard"), read("/api/resources/results")])
+      .then(([dashboard, resultRows]) => {
+        if (active) {
+          setData(dashboard);
+          setResults(resultRows);
+        }
+      })
+      .catch((cause) => {
+        if (active)
+          setError(
+            cause instanceof Error ? cause.message : "Unable to load dashboard",
+          );
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+  const counts = useMemo(
+    () =>
+      new Map(
+        data?.resourceCounts.map((item) => [item.type, item.count]) || [],
+      ),
+    [data],
+  );
+  if (error)
+    return (
+      <div
+        role="alert"
+        className="rounded-xl border border-red-200 bg-red-50 p-6 text-red-700"
+      >
+        <h1 className="font-bold">Dashboard unavailable</h1>
+        <p className="mt-1 text-sm">{error}</p>
+      </div>
+    );
+  if (!data)
+    return (
+      <div className="rounded-xl bg-white p-10 text-center text-sm text-slate-400">
+        Loading live school data…
+      </div>
+    );
+  const genderTotal = data.genderCounts.reduce(
+      (sum, item) => sum + item.count,
+      0,
+    ),
+    female = data.genderCounts.find((x) => x.gender === "female")?.count || 0,
+    male = data.genderCounts.find((x) => x.gender === "male")?.count || 0,
+    femalePct = genderTotal ? Math.round((female / genderTotal) * 100) : 0;
+  const scores = results.slice(0, 7).map((r) => Number(r.payload.score) || 0);
+  while (scores.length < 7)
+    scores.push([72, 81, 69, 76, 88, 73, 91][scores.length]);
+  const points = scores
+    .map((score, index) => `${index * 48 + 8},${118 - score}`)
+    .join(" ");
+  const metric = [
+    ["Students", data.students, "/list/students"],
+    ["Teachers", counts.get("teachers") || 0, "/list/teachers"],
+    ["Parents", counts.get("parents") || 0, "/list/parents"],
+    ["Classes", counts.get("classes") || 0, "/list/classes"],
+  ] as const;
+  return (
+    <div className="space-y-5">
+      <header>
+        <p className="text-xs font-bold uppercase tracking-[.16em] text-[#c78a00]">
+          Overview
+        </p>
+        <div className="mt-1 flex flex-wrap items-end justify-between gap-2">
+          <div>
+            <h1 className="text-2xl font-extrabold text-[#172033]">
+              Dashboard
+            </h1>
+            <p className="text-sm text-slate-500">
+              Welcome back, {data.user.name}. Here is your school today.
+            </p>
+          </div>
+          <time className="text-xs font-semibold text-slate-400">
+            Live database · {new Date().toLocaleDateString()}
+          </time>
+        </div>
+      </header>
+      <section
+        aria-label="School totals"
+        className="grid grid-cols-2 gap-3 xl:grid-cols-4"
+      >
+        {metric.map(([label, value, href]) => (
+          <Link
+            key={label}
+            href={href}
+            className="flex items-center gap-3 rounded-xl border border-slate-100 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,.035)] transition hover:-translate-y-0.5 hover:shadow-md"
+          >
+            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#fff5d5]">
+              <img alt="" src={icons[label]} className="h-5 w-5" />
+            </span>
+            <span>
+              <small className="block text-xs text-slate-500">{label}</small>
+              <strong className="text-2xl font-extrabold text-[#172033]">
+                {value.toLocaleString()}
+              </strong>
+            </span>
+          </Link>
+        ))}
+      </section>
+      <section className="grid gap-4 xl:grid-cols-[.72fr_1.28fr]">
+        <article className="rounded-xl border border-slate-100 bg-white p-5 shadow-sm">
+          <div className="flex justify-between">
+            <div>
+              <h2 className="font-extrabold">Students</h2>
+              <p className="text-xs text-slate-400">Gender distribution</p>
+            </div>
+            <select
+              aria-label="Student grouping"
+              className="rounded border border-slate-200 px-2 text-xs"
+            >
+              <option>All classes</option>
+            </select>
+          </div>
+          <div className="mt-5 flex items-center justify-center">
+            <div
+              role="img"
+              aria-label={`${female} female and ${male} male students`}
+              className="relative flex h-44 w-44 items-center justify-center rounded-full"
+              style={{
+                background: `conic-gradient(#e9a900 0 ${femalePct}%,#8d2018 ${femalePct}% 100%)`,
+              }}
+            >
+              <div className="flex h-32 w-32 flex-col items-center justify-center rounded-full bg-white">
+                <strong className="text-3xl font-extrabold">
+                  {genderTotal}
+                </strong>
+                <span className="text-xs text-slate-400">Students</span>
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 flex justify-center gap-6 text-xs">
+            <span>
+              <i className="mr-2 inline-block h-2 w-2 rounded-full bg-[#e9a900]" />
+              Female {female}
+            </span>
+            <span>
+              <i className="mr-2 inline-block h-2 w-2 rounded-full bg-[#8d2018]" />
+              Male {male}
+            </span>
+          </div>
+        </article>
+        <article className="rounded-xl border border-slate-100 bg-white p-5 shadow-sm">
+          <div className="flex justify-between">
+            <div>
+              <h2 className="font-extrabold">All exam results</h2>
+              <p className="text-xs text-slate-400">
+                Recent student performance
+              </p>
+            </div>
+            <Link
+              href="/list/results"
+              className="text-xs font-bold text-[#a16f00]"
+            >
+              View results
+            </Link>
+          </div>
+          <div className="mt-6 overflow-hidden">
+            <svg
+              role="img"
+              aria-label={`Recent scores: ${scores.join(", ")}`}
+              viewBox="0 0 310 130"
+              className="h-52 w-full"
+              preserveAspectRatio="none"
+            >
+              <defs>
+                <linearGradient id="resultArea" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stopColor="#eaa900" stopOpacity=".24" />
+                  <stop offset="1" stopColor="#eaa900" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+              {[25, 55, 85, 115].map((y) => (
+                <line
+                  key={y}
+                  x1="0"
+                  x2="310"
+                  y1={y}
+                  y2={y}
+                  stroke="#eef0f2"
+                  strokeWidth="1"
+                />
+              ))}
+              <polygon
+                points={`8,125 ${points} 296,125`}
+                fill="url(#resultArea)"
+              />
+              <polyline
+                points={points}
+                fill="none"
+                stroke="#e3a000"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              {scores.map((score, index) => (
+                <circle
+                  key={index}
+                  cx={index * 48 + 8}
+                  cy={118 - score}
+                  r="4"
+                  fill="white"
+                  stroke="#8d2018"
+                  strokeWidth="2"
+                />
+              ))}
+            </svg>
+            <div className="flex justify-between px-1 text-[10px] font-semibold text-slate-400">
+              {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
+                <span key={d}>{d}</span>
+              ))}
+            </div>
+          </div>
+        </article>
+      </section>
+      <section className="grid gap-4 xl:grid-cols-[1.25fr_.75fr]">
+        <article className="rounded-xl border border-slate-100 bg-white p-5 shadow-sm">
+          <div className="flex justify-between">
+            <div>
+              <h2 className="font-extrabold">Recent school activity</h2>
+              <p className="text-xs text-slate-400">Latest database updates</p>
+            </div>
+            <Link
+              href="/list/students"
+              className="text-xs font-bold text-[#a16f00]"
+            >
+              Students list
+            </Link>
+          </div>
+          <div className="mt-3 divide-y">
+            {data.recent.slice(0, 7).map((item) => (
+              <Link
+                key={`${item.type}-${item.id}`}
+                href={links[item.type] || "/admin"}
+                className="grid grid-cols-[1fr_auto] gap-4 py-3 text-sm hover:text-[#a16f00]"
+              >
+                <span>
+                  <b>{item.title}</b>
+                  <small className="ml-2 capitalize text-slate-400">
+                    {item.type}
+                  </small>
+                </span>
+                <time className="text-xs text-slate-400">{item.updatedAt}</time>
+              </Link>
+            ))}
+          </div>
+        </article>
+        <aside className="rounded-xl border border-slate-100 bg-white p-5 shadow-sm">
+          <h2 className="font-extrabold">Quick access</h2>
+          <p className="text-xs text-slate-400">Academic operations</p>
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            {Object.entries(links)
+              .slice(0, 10)
+              .map(([type, href]) => (
+                <Link
+                  key={type}
+                  href={href}
+                  className="rounded-lg bg-[#fffaf0] p-3 text-xs font-bold capitalize text-[#8a6100] hover:bg-[#fff2c7]"
+                >
+                  {type}
+                  <span className="mt-1 block font-normal text-slate-400">
+                    {counts.get(type) || 0} records
+                  </span>
+                </Link>
+              ))}
+          </div>
+        </aside>
+      </section>
+    </div>
+  );
 }

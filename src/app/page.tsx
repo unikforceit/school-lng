@@ -1,35 +1,184 @@
 import Image from "next/image";
 import Link from "next/link";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
-
 const features = [
-  ["01", "Multi-Type ID Making System", "Create secure identities for students, teachers and guardians from one workspace."],
-  ["02", "An Advanced System For Schooling", "Bring daily school operations, academics and communication into one intelligent platform."],
-  ["03", "Automated Attendance Management", "Track attendance trends instantly and keep every stakeholder informed."],
-  ["04", "Popular Online Payment Gateway", "Manage fees, expenses and transactions with clear financial visibility."],
-  ["05", "Management Of Teachers & Learners", "Give every role a focused dashboard with the information they need."],
-  ["06", "Online Exam Management", "Schedule assessments, publish results and understand academic progress."],
+  {
+    icon: "/home.png",
+    title: "Pilotage en temps réel",
+    text: "Tableaux de bord par rôle, notifications et données synchronisées.",
+  },
+  {
+    icon: "/student.png",
+    title: "Parcours de l’élève",
+    text: "Inscriptions annuelles, présences, résultats, promotion et bulletins versionnés.",
+  },
+  {
+    icon: "/setting.png",
+    title: "Conçu pour la Guinée",
+    text: "Cycles nationaux, CEE, BEPC, Baccalauréat, français, GNF et Africa/Conakry.",
+  },
 ];
-
-export default function LandingPage() {
-  return <div className="bg-[#fbfaf6] text-[#111b2f]">
-    <header className="sticky top-0 z-50 border-b border-black/5 bg-[#fbfaf6]/95 backdrop-blur"><div className="mx-auto flex h-20 max-w-6xl items-center justify-between gap-3 px-5"><Link href="/" className="flex items-center gap-3"><Image src="/design/brand-logo.png" alt="Olden School" width={116} height={50} className="h-11 w-auto object-contain" /></Link><nav className="hidden items-center gap-8 text-sm font-medium md:flex"><a href="#home">Home</a><a href="#features">Features</a><a href="#about">About us</a><Link href="/developers">API Docs</Link><a href="#contact">Contact</a></nav><div className="flex items-center gap-2"><LanguageSwitcher compact/><Link href="/sign-in" className="rounded bg-[#efa900] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#d99900] sm:px-5">Login</Link></div></div></header>
-
-    <main id="main-content">
-      <section id="home" className="mx-auto grid min-h-[650px] max-w-6xl items-center gap-12 px-5 py-16 lg:grid-cols-[1fr_.92fr]"><div><p className="mb-4 text-sm font-semibold uppercase tracking-[.2em] text-[#efa900]">Smart education platform</p><h1 className="max-w-xl text-5xl font-bold leading-[.98] tracking-[-.045em] sm:text-6xl"><span className="text-[#efa900]">Olden</span> School<br />Management<br />System</h1><p className="mt-7 max-w-lg text-base leading-7 text-slate-500">Beautifully designed for school leaders, students, teachers and parents. Organize learning, communication and administration in one secure system.</p><div className="mt-8 flex flex-wrap items-center gap-4"><Link href="/sign-in" className="rounded bg-[#efa900] px-6 py-3 text-sm font-semibold text-white">Get Started</Link><a href="#features" className="flex items-center gap-2 text-sm font-semibold"><span className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-300">▶</span> Watch Demo</a></div></div><div className="relative mx-auto w-full max-w-[500px]"><div className="absolute -left-8 top-12 z-10 rounded-xl bg-white p-4 shadow-xl"><p className="text-xs text-slate-400">Success rate</p><p className="text-2xl font-bold">34%</p></div><Image src="/design/hero-study.webp" alt="Students learning together" width={760} height={920} priority className="h-[520px] w-full rounded-[2rem] object-cover" /><div className="absolute -bottom-5 -right-5 rounded-xl bg-white px-5 py-4 shadow-xl"><p className="text-2xl font-bold">156+</p><p className="text-xs text-slate-400">Institutions</p></div></div></section>
-
-      <section className="bg-[#0c2237] py-6 text-white"><div className="mx-auto flex max-w-6xl flex-wrap items-center justify-around gap-8 px-5 text-sm font-semibold opacity-80"><span>◈ wework</span><span>◎ Superflow</span><span>martino △</span><span>✥ Viragons</span></div></section>
-
-      <section id="features" className="mx-auto max-w-6xl px-5 py-24"><div className="mx-auto max-w-xl text-center"><p className="text-sm font-semibold text-[#efa900]">What we offer</p><h2 className="mt-2 text-4xl font-bold tracking-tight">We Give Best Features</h2><p className="mt-4 text-sm leading-6 text-slate-500">Everything your institution needs to make education proactive, connected and measurable.</p></div><div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">{features.map(([number, title, copy]) => <article key={title} className="rounded-lg border border-slate-100 bg-white p-7 shadow-[0_8px_30px_rgba(15,35,55,.05)]"><span className="text-3xl font-bold text-[#efa900]">{number}</span><h3 className="mt-5 text-lg font-bold">{title}</h3><p className="mt-3 text-sm leading-6 text-slate-500">{copy}</p></article>)}</div></section>
-
-      <section id="about" className="mx-auto grid max-w-6xl items-center gap-14 px-5 pb-24 lg:grid-cols-2"><div><p className="text-sm font-semibold text-[#efa900]">Learning without limits</p><h2 className="mt-3 text-4xl font-bold leading-tight">Educating You Will Lead You To A Bright Future</h2><p className="mt-5 text-sm leading-7 text-slate-500">SIME turns scattered school processes into a clear, shared system. Teams can focus on better outcomes because records, schedules, results and communication stay organized.</p><Link href="/sign-in" className="mt-7 inline-block rounded bg-[#efa900] px-6 py-3 text-sm font-semibold text-white">Explore Platform</Link></div><div className="relative"><Image src="/design/library-study.jpg" alt="Students studying in a library" width={720} height={480} className="h-[390px] w-full rounded-2xl object-cover" /><div className="absolute -bottom-5 -left-5 rounded-xl bg-white p-5 shadow-xl"><p className="text-3xl font-bold">156+</p><p className="text-xs text-slate-400">Satisfied schools</p></div></div></section>
-
-      <section className="bg-[#0c2237] py-24 text-white"><div className="mx-auto max-w-6xl px-5 text-center"><p className="text-sm font-semibold text-[#efa900]">Built for every institution</p><h2 className="mt-3 text-4xl font-bold">School Management System<br />For Your Institution</h2><div className="mt-14 grid gap-8 text-left md:grid-cols-3">{[["Simple & Easy To Use", "Focused workflows make daily work faster for every school role."], ["Powerful Features For Your Institution", "A reusable platform for academics, finance, communication and insights."], ["Secure Integration API", "Connect licensed school data to approved systems with scoped, revocable API keys."]].map(([t,c],i)=><div key={t} className="border-t border-white/20 pt-6"><span className="text-2xl font-bold text-[#efa900]">0{i+1}</span><h3 className="mt-4 font-bold">{t}</h3><p className="mt-3 text-sm leading-6 text-slate-300">{c}</p>{i===2&&<Link href="/developers" className="mt-4 inline-block text-sm font-bold text-[#efa900]">View API documentation →</Link>}</div>)}</div></div></section>
-
-      <section id="testimonials" className="mx-auto max-w-6xl px-5 py-24"><div className="text-center"><p className="text-sm font-semibold text-[#efa900]">Testimonials</p><h2 className="mt-2 text-4xl font-bold">What People Want To Say</h2></div><div className="mt-12 grid gap-5 md:grid-cols-3">{["Sophie Brown", "Amelia Stone", "Henry Mitchell"].map((name)=><blockquote key={name} className="rounded-lg bg-white p-7 shadow-sm"><div className="text-[#efa900]">★★★★★</div><p className="mt-4 text-sm leading-7 text-slate-600">“The system gives our team a single, calm place to manage school life. Information is easier to find and decisions are much faster.”</p><footer className="mt-5 text-sm font-bold">{name}<span className="block text-xs font-normal text-slate-400">School administrator</span></footer></blockquote>)}</div></section>
-
-      <section id="contact" className="bg-[#0c2237] px-5 py-20 text-center text-white"><h2 className="text-4xl font-bold">Get Started For Free Today</h2><p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-slate-300">Bring your students, teachers and families into one beautifully connected school experience.</p><div className="mt-7 flex justify-center gap-3"><Link href="/sign-in" className="rounded bg-[#efa900] px-6 py-3 text-sm font-semibold">Get Started</Link><a href="mailto:hello@sime.school" className="rounded border border-white/30 px-6 py-3 text-sm font-semibold">Contact us</a></div></section>
+export default function Home() {
+  return (
+    <main id="main-content" className="min-h-screen bg-white text-[#102039]">
+      <header className="sticky top-0 z-50 border-b border-black/5 bg-white/95 backdrop-blur">
+        <div className="mx-auto flex min-h-20 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
+          <Link href="/" className="shrink-0">
+            <Image
+              src="/logo.png"
+              alt="School-InG · GNG GROUP"
+              width={48}
+              height={48}
+              priority
+              className="h-11 w-11 object-contain sm:hidden"
+            />
+            <Image
+              src="/design/school-ing-logo.png"
+              alt=""
+              width={190}
+              height={64}
+              priority
+              className="hidden h-14 w-auto object-contain sm:block"
+            />
+          </Link>
+          <nav
+            aria-label="Navigation principale"
+            className="hidden items-center gap-7 text-sm font-bold md:flex"
+          >
+            <a href="#fonctionnalites">Fonctionnalités</a>
+            <a href="#guinee">Guinée</a>
+            <Link href="/developers">API</Link>
+          </nav>
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher compact />
+            <Link
+              href="/sign-in"
+              className="min-h-11 rounded-xl bg-[#efa900] px-4 py-3 text-sm font-black text-[#102039]"
+            >
+              Connexion
+            </Link>
+          </div>
+        </div>
+      </header>
+      <section className="overflow-hidden bg-[#fbfaf6]">
+        <div className="mx-auto grid min-h-[650px] max-w-6xl items-center gap-12 px-5 py-16 lg:grid-cols-[1fr_.92fr]">
+          <div>
+            <p className="mb-4 text-sm font-black uppercase tracking-[.2em] text-[#c88700]">
+              La gestion scolaire, simplement
+            </p>
+            <h1 className="max-w-2xl text-5xl font-black leading-[.98] tracking-[-.045em] sm:text-6xl">
+              Chaque école.
+              <br />
+              <span className="text-[#d89500]">Une année maîtrisée.</span>
+            </h1>
+            <p className="mt-7 max-w-xl text-base leading-7 text-slate-600">
+              School-InG relie administration, enseignants, élèves et parents
+              dans un espace sécurisé, français par défaut et adapté au système
+              éducatif guinéen.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                href="/sign-in"
+                className="min-h-12 rounded-xl bg-[#102039] px-6 py-3.5 text-sm font-black text-white"
+              >
+                Découvrir la plateforme
+              </Link>
+              <a
+                href="#fonctionnalites"
+                className="min-h-12 rounded-xl border border-slate-300 bg-white px-6 py-3.5 text-sm font-black"
+              >
+                Voir les fonctions
+              </a>
+            </div>
+          </div>
+          <div className="relative mx-auto w-full max-w-[500px]">
+            <Image
+              src="/design/hero-study.webp"
+              alt="Élèves apprenant ensemble"
+              width={760}
+              height={920}
+              priority
+              className="h-[520px] w-full rounded-[2rem] object-cover"
+            />
+            <div className="absolute -bottom-5 end-3 rounded-2xl bg-white px-5 py-4 shadow-xl sm:-end-5">
+              <p className="text-xs font-bold text-slate-500">Année scolaire</p>
+              <p className="text-xl font-black">2026–2027 · Guinée</p>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section id="fonctionnalites" className="mx-auto max-w-6xl px-5 py-24">
+        <div className="max-w-2xl">
+          <p className="text-sm font-black uppercase tracking-[.18em] text-[#c88700]">
+            Pratique au quotidien
+          </p>
+          <h2 className="mt-3 text-4xl font-black">
+            Tout ce qui compte, accessible sans détour.
+          </h2>
+        </div>
+        <div className="mt-10 grid gap-5 md:grid-cols-3">
+          {features.map((item) => (
+            <article
+              key={item.title}
+              className="rounded-2xl border border-slate-100 bg-white p-6 shadow-[0_15px_50px_rgba(15,23,42,.06)]"
+            >
+              <Image src={item.icon} alt="" width={28} height={28} />
+              <h3 className="mt-5 text-lg font-black">{item.title}</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                {item.text}
+              </p>
+            </article>
+          ))}
+        </div>
+      </section>
+      <section id="guinee" className="bg-[#102039] text-white">
+        <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-20 lg:grid-cols-2">
+          <div>
+            <p className="text-sm font-black uppercase tracking-[.18em] text-amber-400">
+              School-InG · GNG GROUP
+            </p>
+            <h2 className="mt-3 text-4xl font-black">
+              Une base commune, une configuration propre à chaque école.
+            </h2>
+            <p className="mt-5 leading-7 text-slate-300">
+              Préscolaire, primaire, collège et lycée restent configurables. Les
+              années clôturées deviennent historiques et protégées ; les
+              reconductions copient la structure sans copier notes, présences,
+              factures ou paiements.
+            </p>
+          </div>
+          <Image
+            src="/design/library-study.jpg"
+            alt="Élèves étudiant dans une bibliothèque"
+            width={720}
+            height={480}
+            className="h-80 w-full rounded-2xl object-cover"
+          />
+        </div>
+      </section>
+      <footer className="bg-[#fbfaf6] py-12">
+        <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 px-5 sm:flex-row sm:items-center">
+          <div>
+            <Image
+              src="/design/school-ing-logo.png"
+              alt="School-InG · GNG GROUP"
+              width={180}
+              height={60}
+              className="h-14 w-auto object-contain"
+            />
+            <p className="mt-2 text-sm text-slate-500">
+              Gestion scolaire sécurisée et adaptée à la Guinée.
+            </p>
+          </div>
+          <div className="flex gap-5 text-sm font-bold">
+            <Link href="/developers">Documentation API</Link>
+            <Link href="/sign-in">Connexion</Link>
+          </div>
+        </div>
+        <p className="mx-auto mt-8 max-w-6xl border-t px-5 pt-6 text-xs text-slate-400">
+          © 2026 School-InG · GNG GROUP. Tous droits réservés.
+        </p>
+      </footer>
     </main>
-    <footer className="bg-[#fbfaf6] py-14"><div className="mx-auto grid max-w-6xl gap-8 px-5 sm:grid-cols-2 lg:grid-cols-4"><div><Image src="/design/brand-logo.png" alt="Olden School" width={140} height={60} className="h-12 w-auto object-contain" /><p className="mt-4 text-sm leading-6 text-slate-500">A smarter management system for modern institutions.</p></div>{[["Platform", "Features\nDashboard\nSAGE AI"], ["Services", "Academics\nAttendance\nCommunication"]].map(([title,links])=><div key={title}><h3 className="text-sm font-bold">{title}</h3><p className="mt-4 whitespace-pre-line text-sm leading-7 text-slate-500">{links}</p></div>)}<div><h3 className="text-sm font-bold">Resources</h3><div className="mt-4 flex flex-col items-start gap-2 text-sm text-slate-500"><Link href="/developers">API documentation</Link><a href="#about">About us</a><a href="#contact">Contact</a></div></div></div><p className="mx-auto mt-10 max-w-6xl border-t px-5 pt-6 text-xs text-slate-400">© 2026 SIME. All rights reserved.</p></footer>
-  </div>;
+  );
 }

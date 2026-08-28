@@ -46,11 +46,11 @@ function context() {
 
 async function login(role) {
   const values = {
-    superadmin: [platformLogin, "/api/platform/auth/login", { email: "superadmin@sime.local", password: "SuperAdmin123!" }],
-    admin: [schoolLogin, "/api/auth/login", { tenantId: "demo-school", email: "admin@sime.local", password: "ChangeMe123!" }],
-    teacher: [schoolLogin, "/api/auth/login", { tenantId: "demo-school", email: "teacher@sime.local", password: "Teacher123!" }],
-    student: [schoolLogin, "/api/auth/login", { tenantId: "demo-school", email: "student@sime.local", password: "Student123!" }],
-    parent: [schoolLogin, "/api/auth/login", { tenantId: "demo-school", email: "parent@sime.local", password: "Parent123!" }],
+    superadmin: [platformLogin, "/api/platform/auth/login", { email: "superadmin@school-ing.gn", password: "SuperAdmin123!" }],
+    admin: [schoolLogin, "/api/auth/login", { tenantId: "demo-school", email: "admin@school-ing.gn", password: "ChangeMe123!" }],
+    teacher: [schoolLogin, "/api/auth/login", { tenantId: "demo-school", email: "teacher@school-ing.gn", password: "Teacher123!" }],
+    student: [schoolLogin, "/api/auth/login", { tenantId: "demo-school", email: "student@school-ing.gn", password: "Student123!" }],
+    parent: [schoolLogin, "/api/auth/login", { tenantId: "demo-school", email: "parent@school-ing.gn", password: "Parent123!" }],
   };
   const [routeModule, path, body] = values[role];
   const response = await routeModule.routeModule.userland.POST(
@@ -92,7 +92,7 @@ try {
   );
   ids.push(
     Number(insert.run("demo-school", "all", "", "system", "Realtime verification", "Visible to every school role", "").lastInsertRowid),
-    Number(insert.run("demo-school", "student", "student@sime.local", "academic", "Private verification", "Visible only to Jessica", "").lastInsertRowid),
+    Number(insert.run("demo-school", "student", "student@school-ing.gn", "academic", "Private verification", "Visible only to Mariama", "").lastInsertRowid),
     Number(insert.run("platform", "superadmin", "", "platform", "Platform verification", "Visible only in platform console", "").lastInsertRowid),
   );
 

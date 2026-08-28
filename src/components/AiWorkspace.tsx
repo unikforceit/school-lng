@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { FormEvent,KeyboardEvent,useEffect,useRef,useState } from "react";
 import { useSageChat } from "@/hooks/useSageChat";
-const starters=["Summarize attendance patterns and tell me who may need support.","Draft a friendly announcement about next week's assessment.","Create a student: ID SIME-1042, name Noor Ahmed, email noor@example.edu, grade 8, class 8-A, gender female."];
+const starters=["Résume les tendances de présence et signale les élèves à accompagner.","Rédige une annonce conviviale sur la prochaine composition.","Crée un élève : ID GIN-2026-1042, nom Mamadou Camara, niveau 10e, classe 10e-A."];
 export default function AiWorkspace(){
  const chat=useSageChat(),[text,setText]=useState(""),end=useRef<HTMLDivElement>(null);useEffect(()=>{end.current?.scrollIntoView({behavior:"smooth"})},[chat.messages,chat.sending]);
  async function submit(event?:FormEvent,prompt=text){event?.preventDefault();const outgoing=prompt.trim();if(outgoing.length<3||chat.sending)return;setText("");await chat.send(outgoing)}

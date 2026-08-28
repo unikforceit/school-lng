@@ -5,10 +5,11 @@ import { hasValidOrigin, jsonError } from "@/lib/http";
 import { canReadResource, canWriteResource, resourceConfig, resourcePayloadSchema, resourceTypeSchema } from "@/lib/resources";
 import { securityOriginValid } from "@/lib/security";
 import { schoolScope } from "@/lib/gamification";
+import { activeAcademicYearId } from "@/lib/academic-years";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-const select = `SELECT id, resource_type AS resourceType, title, payload, created_at AS createdAt, updated_at AS updatedAt FROM resources`;
+const select = `SELECT id, resource_type AS resourceType, title, payload, academic_year_id AS academicYearId, created_at AS createdAt, updated_at AS updatedAt FROM resources`;
 
 export async function GET(request: Request, context: { params: Promise<{ type: string }> }) {
   const session = await getSession();
@@ -61,6 +62,7 @@ export async function POST(request: Request, context: { params: Promise<{ type: 
   if (missing.length) return jsonError("Required fields are missing", 400, { fields: missing.map((item) => item.name) });
   if(session.role==="teacher"){const recordClass=String(clean.class||"");if(recordClass&&recordClass.toLowerCase()!=="all"&&!schoolScope(session).classes.includes(recordClass))return jsonError("Teachers can modify records only in their assigned classes",403)}
   const title = String(clean[config.primary] ?? config.title).slice(0, 150);
-  const result = db.prepare("INSERT INTO resources (tenant_id, resource_type, title, payload) VALUES (?, ?, ?, ?)").run(session.tenantId, type.data, title, JSON.stringify(clean));
-  return NextResponse.json({ data: { id: Number(result.lastInsertRowid), resourceType: type.data, title, payload: clean } }, { status: 201 });
+  const academicYearId=activeAcademicYearId(session.tenantId);
+  const result = db.prepare("INSERT INTO resources (tenant_id, resource_type, title, payload, academic_year_id) VALUES (?, ?, ?, ?, ?)").run(session.tenantId, type.data, title, JSON.stringify(clean),academicYearId);
+  return NextResponse.json({ data: { id: Number(result.lastInsertRowid), resourceType: type.data, title, payload: clean,academicYearId } }, { status: 201 });
 }

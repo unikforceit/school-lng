@@ -5,6 +5,7 @@ import { hasValidOrigin, jsonError } from "@/lib/http";
 import { canWriteResource, resourceConfig, resourcePayloadSchema, resourceTypeSchema } from "@/lib/resources";
 import { securityOriginValid } from "@/lib/security";
 import { schoolScope } from "@/lib/gamification";
+import { academicYearLocked } from "@/lib/academic-years";
 
 const idSchema = z.coerce.number().int().positive();
 async function contextData(context: { params: Promise<{ type: string; id: string }> }) {
@@ -19,6 +20,9 @@ export async function PUT(request: Request, context: { params: Promise<{ type: s
   const { type, id } = await contextData(context);
   if (!type.success || !id.success) return jsonError("Invalid resource", 400);
   if (!canWriteResource(session.role, type.data)) return jsonError("This role cannot modify this resource", 403);
+  const existing=db.prepare("SELECT academic_year_id academicYearId FROM resources WHERE id=? AND tenant_id=? AND resource_type=?").get(id.data,session.tenantId,type.data) as {academicYearId:number|null}|undefined;
+  if(!existing)return jsonError("Resource not found",404);
+  if(academicYearLocked(session.tenantId,existing.academicYearId))return jsonError("Cette année scolaire est clôturée : les notes et dossiers associés sont verrouillés.",423);
   const payload = resourcePayloadSchema.safeParse(await request.json().catch(() => null));
   if (!payload.success) return jsonError("Invalid resource data", 400, payload.error.flatten());
   const config = resourceConfig[type.data];
@@ -39,6 +43,9 @@ export async function DELETE(request: Request, context: { params: Promise<{ type
   const { type, id } = await contextData(context);
   if (!type.success || !id.success) return jsonError("Invalid resource", 400);
   if (!canWriteResource(session.role, type.data)) return jsonError("This role cannot modify this resource", 403);
+  const existing=db.prepare("SELECT academic_year_id academicYearId FROM resources WHERE id=? AND tenant_id=? AND resource_type=?").get(id.data,session.tenantId,type.data) as {academicYearId:number|null}|undefined;
+  if(!existing)return jsonError("Resource not found",404);
+  if(academicYearLocked(session.tenantId,existing.academicYearId))return jsonError("Cette année scolaire est clôturée : les dossiers historiques sont en lecture seule.",423);
   if(session.role==="teacher"){const row=db.prepare("SELECT payload FROM resources WHERE id=? AND tenant_id=? AND resource_type=?").get(id.data,session.tenantId,type.data) as {payload:string}|undefined;if(!row)return jsonError("Resource not found",404);const record=JSON.parse(row.payload) as Record<string,unknown>,recordClass=String(record.class||"");if(recordClass&&recordClass.toLowerCase()!=="all"&&!schoolScope(session).classes.includes(recordClass))return jsonError("Teachers can modify records only in their assigned classes",403)}
   const result = db.prepare("DELETE FROM resources WHERE id = ? AND tenant_id = ? AND resource_type = ?").run(id.data, session.tenantId, type.data);
   if (!result.changes) return jsonError("Resource not found", 404);

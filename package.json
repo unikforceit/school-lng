@@ -24,7 +24,8 @@
     ,"verify:settings": "node scripts/verify-settings.mjs"
     ,"verify:notifications": "node scripts/verify-notifications.mjs"
     ,"verify:deployment": "node scripts/verify-deployment.mjs"
-    ,"verify:all": "npm run check && npm run verify && npm run verify:search && npm run verify:ai && npm run verify:assignments && npm run verify:role-feedback && npm run verify:platform-data && npm run verify:developer-api && npm run verify:settings && npm run verify:notifications && npm run verify:deployment"
+    ,"verify:academic": "node scripts/verify-academic-years.mjs"
+    ,"verify:all": "npm run check && npm run verify && npm run verify:search && npm run verify:ai && npm run verify:assignments && npm run verify:role-feedback && npm run verify:platform-data && npm run verify:developer-api && npm run verify:settings && npm run verify:notifications && npm run verify:academic && npm run verify:deployment"
   },
   "dependencies": {
     "better-sqlite3": "^12.11.1",

@@ -28,7 +28,7 @@ check(config.includes('output: "standalone"'), "Next.js standalone output is ena
 check(existsSync(join(root, ".next/standalone/server.js")), "standalone production server artifact exists");
 check(dockerfile.includes("USER node") && dockerfile.includes(".next/standalone") && dockerfile.includes('CMD ["node", "server.js"]'), "container is standalone and non-root");
 check(compose.includes("/api/health") && compose.includes("sime-data:/app/data"), "container health check and persistent data volume are configured");
-check(rootLayout.includes('href="#main-content"') && rootLayout.includes('lang="en"'), "page language and skip navigation are present");
+check(rootLayout.includes('href="#main-content"') && rootLayout.includes('lang="fr"'), "page language and skip navigation are present");
 check(css.includes(":focus-visible") && css.includes("prefers-reduced-motion") && css.includes("forced-colors"), "focus, reduced-motion, and high-contrast support are present");
 check(shell.includes('aria-modal="true"') && shell.includes('event.key === "Escape"') && shell.includes('event.key === "Tab"'), "mobile navigation is a keyboard-safe dialog");
 check(notifications.includes('role="status"') && notifications.includes('navigator.onLine') && notifications.includes("router.refresh()"), "notification center exposes live/offline sync state and refreshes pages");

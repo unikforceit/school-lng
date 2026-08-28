@@ -12,11 +12,11 @@ const platformLoginModule = require("../.next/server/app/api/platform/auth/login
 const base = "http://127.0.0.1:6969";
 
 const accounts = {
-  superadmin: ["platform", "superadmin@sime.local", "SuperAdmin123!"],
-  admin: ["demo-school", "admin@sime.local", "ChangeMe123!"],
-  teacher: ["demo-school", "teacher@sime.local", "Teacher123!"],
-  student: ["demo-school", "student@sime.local", "Student123!"],
-  parent: ["demo-school", "parent@sime.local", "Parent123!"],
+  superadmin: ["platform", "superadmin@school-ing.gn", "SuperAdmin123!"],
+  admin: ["demo-school", "admin@school-ing.gn", "ChangeMe123!"],
+  teacher: ["demo-school", "teacher@school-ing.gn", "Teacher123!"],
+  student: ["demo-school", "student@school-ing.gn", "Student123!"],
+  parent: ["demo-school", "parent@school-ing.gn", "Parent123!"],
 };
 const failures = [];
 let checks = 0;
@@ -44,15 +44,15 @@ for (const role of Object.keys(accounts)) {
   const navigation = await search(cookie, "dashboard");
   check(navigation.status === 200 && navigation.data.some(item => item.category === "Navigation"), `${role} navigation search`);
   if (role === "admin" || role === "teacher") {
-    const person = await search(cookie, "Jessica");
+    const person = await search(cookie, "Mariama");
     check(person.data.some(item => item.category === "Student" && item.href.startsWith("/list/students/")), `${role} student destination`);
   }
   if (role === "student" || role === "parent") {
-    const privateTeacher = await search(cookie, "teacher@sime.local");
-    check(!privateTeacher.data.some(item => item.title === "Emily Anderson"), `${role} cannot search hidden teacher email`);
-    const otherStudent = await search(cookie, "Nabil");
+    const privateTeacher = await search(cookie, "teacher@school-ing.gn");
+    check(!privateTeacher.data.some(item => item.title === "Ibrahima Condé"), `${role} cannot search hidden teacher email`);
+    const otherStudent = await search(cookie, "Mamadou Sékou");
     check(!otherStudent.data.some(item => ["Results", "Attendance", "Student"].includes(item.category)), `${role} cannot search another student's records`);
-    const ownRecord = await search(cookie, "Jessica");
+    const ownRecord = await search(cookie, "Mariama");
     check(ownRecord.data.some(item => ["Results", "Attendance"].includes(item.category)), `${role} can search authorized student records`);
   }
   if (role === "superadmin") {
