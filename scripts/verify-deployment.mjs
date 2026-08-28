@@ -35,6 +35,7 @@ check(notifications.includes('role="status"') && notifications.includes('navigat
 check(stream.includes("last-event-id") && stream.includes('X-Accel-Buffering'), "realtime stream supports reconnect resumption and proxy-safe delivery");
 check(guide.includes("Railway") && guide.includes("Vercel + Supabase") && guide.includes("Render + persistent disk") && guide.includes("Fly.io + volume") && guide.includes("cPanel") && guide.includes("Docker VPS"), "deployment guide covers supported hosting paths");
 check(i18n.includes('code: "ar"') && i18n.includes('code: "fr"') && i18n.includes('direction: "rtl"'), "multilingual catalog includes Arabic, French, and RTL metadata");
+check(!i18n.includes('code: "bn"') && !i18n.includes('Bengali') && !i18n.includes('বাংলা'), "removed Bengali locale cannot be selected or persisted");
 check(idCard.includes('print("selected")') && idCard.includes('print("all")') && css.includes("85.6mm") && css.includes("53.98mm"), "ID cards support selected and authorized bulk printing at ISO card size");
 check(profileApi.includes(".strict()") && profileApi.includes("hasValidOrigin") && profileApi.includes("updateUserMetadata"), "profile editing validates an allowlist and enforces same-origin writes");
 check(supabaseAuth.includes("user.user_metadata") && supabaseAuth.includes("metadata.role") && !supabaseAuth.includes("profile.role"), "editable user metadata is separated from app-controlled authorization metadata");
